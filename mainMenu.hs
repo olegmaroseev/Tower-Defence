@@ -1,5 +1,7 @@
 {-# LANGUAGE  ExistentialQuantification, ScopedTypeVariables #-}
 
+module MainMenu where
+
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import GUI
@@ -10,14 +12,11 @@ level3min = "pic/level1.bmp"
 level4min = "pic/level1.bmp"
 level5min = "pic/level1.bmp"
 
-
-
-testMainMenu :: IO()
-testMainMenu = do
+mainMenu :: IO()
+mainMenu = do
         level1ico@(Bitmap _ _ _ _) <- loadBMP level1min
         runGUI 
-         (InWindow "Tower Defence" 
-         (600, 400) 
+         (InWindow "Tower Defence Main Menu" (600, 400) 
          (100,  100))
          (greyN 0.25) 
          30
