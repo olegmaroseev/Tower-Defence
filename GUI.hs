@@ -1,7 +1,8 @@
-{-# LANGUAGE  ExistentialQuantification #-}
+{-# LANGUAGE  ExistentialQuantification, ScopedTypeVariables #-}
 
 module GUI where
 
+import Data.Typeable
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Codec.BMP
@@ -19,23 +20,24 @@ class GUIObject a where
   eventHandler :: EventHandler a
   eventHandler = defaultHandler
 
-data GUIElem = forall a. GUIObject a => GUIElem a
+data GUIElem = forall a. (Typeable a, GUIObject a) => GUIElem a
 
-runGUI :: Display -> Color -> Int -> [GUIElem] ->
-                          (Event -> [GUIElem] -> [GUIElem]) -> (Float -> [GUIElem] -> [GUIElem]) -> IO ()
+runGUI :: Display -> Color -> Int -> [(String, GUIElem)] ->
+                          (Event -> [(String, GUIElem)] -> [(String, GUIElem)]) -> 
+                          (Float -> [(String, GUIElem)] -> [(String, GUIElem)]) -> IO ()
 runGUI display backColor simResolution
         objects handleEvents updateWorld = 
         play display backColor simResolution objects renderGUI
         (\event -> (handleEvents event). (handleGUIEvents event))
         (\time -> (updateWorld time) . (updateGUI time))
         
-renderGUI :: [GUIElem] -> Picture
-renderGUI objects = Pictures $ map renderElem objects
+renderGUI :: [(String, GUIElem)] -> Picture
+renderGUI objects = Pictures $ map (renderElem.snd) objects
         
-handleGUIEvents :: Event -> [GUIElem] -> [GUIElem]
+handleGUIEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
 handleGUIEvents event objects = map (eventHandlerElem event) objects
         
-updateGUI :: Float -> [GUIElem] -> [GUIElem]
+updateGUI :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
 updateGUI time objects = map (updateElem time) objects
 
 tower1Path = "pic/tower1.bmp"
@@ -43,11 +45,11 @@ tower1Path = "pic/tower1.bmp"
 renderElem :: GUIElem -> Picture
 renderElem (GUIElem a) = renderObject a
 
-updateElem :: Float -> GUIElem -> GUIElem
-updateElem time (GUIElem a) = GUIElem $ updateObject time a
+updateElem :: Float -> (String, GUIElem) -> (String, GUIElem)
+updateElem time (name, GUIElem a) = (name, GUIElem $ updateObject time a)
 
-eventHandlerElem :: EventHandler GUIElem
-eventHandlerElem event (GUIElem a) = GUIElem $ eventHandler event a
+eventHandlerElem :: EventHandler (String, GUIElem)
+eventHandlerElem event (name, GUIElem a) = (name, GUIElem $ eventHandler event a)
 
 testGUI :: IO()
 testGUI = do
@@ -58,30 +60,38 @@ testGUI = do
          (100,  100))
          (greyN 0.25) 
          30
-         [GUIElem (TextButton (0, 0) 100 50 (greyN 0.5) "HELLO" False),
-         GUIElem (IconButton (100, 0) 150 150 towerIcon1)]
+         [("TestButton1", GUIElem (TextButton (0, 0) 100 50 (greyN 0.5) "HELLO" False)),
+         ("TestButton2", GUIElem (IconButton (100, 0) 150 150 towerIcon1))]
          (\_ -> id)
-         (\_ -> id)
+         updateAll--(\_ -> id)
 
+updateAll :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
+updateAll time xs = map update xs
+  where
+    update ("TestButton1", GUIElem a) = ("TestButton1", GUIElem $ TextButton (x-time*2, y) w h c t hl)
+      where
+        Just (TextButton (x, y) w h c t hl) = cast a
+    update other = other
+         
 data TextButton = TextButton Point   --centerPoint
                              Integer --width
                              Integer --height
                              Color   --color
                              String  --text
                              Bool -- Highlighted
-                             deriving Show
+                             deriving (Show, Typeable)
 
 data IconButton = IconButton Point   --centerPoint
                              Integer --width
                              Integer --height
                              Picture --icon
-                             deriving Show
+                             deriving (Show, Typeable)
 
 data TextBox = TextBox Point   --centerPoint
                        Integer --width
                        Integer --height
                        String  --contents
-                       deriving Show
+                       deriving (Show, Typeable)
 contains :: Point -> (Integer, Integer) -> Point -> Bool
 contains (x, y) (w, h) (tx, ty) = (ty >= bottom) && (ty <= top) && (tx >= left) && (tx <= right)
   where
