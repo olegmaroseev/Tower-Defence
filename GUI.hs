@@ -1,4 +1,4 @@
-{-# LANGUAGE  ExistentialQuantification, ScopedTypeVariables #-}
+{-# LANGUAGE  ExistentialQuantification #-}
 
 module GUI where
 
