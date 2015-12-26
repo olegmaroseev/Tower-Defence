@@ -6,7 +6,7 @@ import Data.Typeable
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Codec.BMP
-
+import Paths
 
 type EventHandler a = Event -> a -> a
 
@@ -45,34 +45,21 @@ handleGUIEvents event objects = map (\(n, a) -> (n, eventHandler event a)) objec
 updateGUI :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
 updateGUI time objects = map (\(n, a) -> (n, updateObject time a)) objects
 
-tower1Path = "pic/tower1.bmp"
 
 unpackCast :: (GUIObject a, Typeable a) => GUIElem -> Maybe a
 unpackCast (GUIElem a) = cast a
 
-testGUI :: IO()
-testGUI = do
-        towerIcon1@(Bitmap _ _ _ _) <- loadBMP tower1Path
-        runGUI 
-         (InWindow "Tower Defence" 
-         (600, 400) 
-         (100,  100))
-         (greyN 0.25) 
-         30
-         [("TestButton1", GUIElem (TextButton (0, 0) 100 50 (greyN 0.5) "HELLO" False)),
-         ("TestButton2", GUIElem (IconButton (100, 0) 150 150 towerIcon1))]
-         (\_ -> id)
-         updateAll--(\_ -> id)
-
 updateAll :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
 updateAll time xs = map update xs
   where
-    update ("TestButton1",a ) | Just (TextButton (x, y) w h c t hl) <- unpackCast a = ("TestButton1", GUIElem $ TextButton (x-time*2, y) w h c t hl)
+    update ("TestButton1",a ) | Just (TextButton (x, y) w h sc c t hl) <- unpackCast a = 
+         ("TestButton1", GUIElem $ TextButton (x-time*2, y) w h sc c t hl)
     update other = other
          
 data TextButton = TextButton Point   --centerPoint
                              Integer --width
                              Integer --height
+                             Float   --scale factor
                              Color   --color
                              String  --text
                              Bool -- Highlighted
@@ -82,12 +69,15 @@ data IconButton = IconButton Point   --centerPoint
                              Integer --width
                              Integer --height
                              Picture --icon
+                             Bool -- Highlighted
                              deriving (Show, Typeable)
 
 data TextBox = TextBox Point   --centerPoint
                        Integer --width
                        Integer --height
-                       String  --contents
+                       Color   --color
+                       Float   --strHeight
+                       [String]  --contents
                        deriving (Show, Typeable)
 contains :: Point -> (Integer, Integer) -> Point -> Bool
 contains (x, y) (w, h) (tx, ty) = (ty >= bottom) && (ty <= top) && (tx >= left) && (tx <= right)
@@ -101,39 +91,71 @@ contains (x, y) (w, h) (tx, ty) = (ty >= bottom) && (ty <= top) && (tx >= left) 
                        
 instance GUIObject TextButton where
   renderObject = renderTButton
-  eventHandler (EventMotion ep) tb@(TextButton p w h c t hl)
-    | (not hl) && contains p (w,h) ep = TextButton p w h c t True
-    | hl && (not $ contains p (w,h) ep) = TextButton p w h c t False
+  eventHandler (EventMotion ep) tb@(TextButton p w h sc c t hl)
+    | (not hl) && contains p (w,h) ep = TextButton p w h sc c t True
+    | hl && (not $ contains p (w,h) ep) = TextButton p w h sc c t False
     | otherwise = tb
   eventHandler _ o = o
 
 instance GUIObject IconButton where
   renderObject = renderIButton
+  eventHandler (EventMotion ep) tb@(IconButton p w h t hl)
+    | (not hl) && contains p (w,h) ep = IconButton p w h t True
+    | hl && (not $ contains p (w,h) ep) = IconButton p w h t False
+    | otherwise = tb
+  eventHandler _ o = o
+
+instance GUIObject TextBox where
+  renderObject = renderTextBox
                        
 renderTButton :: TextButton -> Picture
-renderTButton (TextButton (x, y) w h c txtStr hl) = 
+renderTButton (TextButton (x, y) w h sc c txtStr hl) = 
     let halfW = fromIntegral w / 2
         halfH = fromIntegral h / 2
         fr = 3
-    in Translate x y $ Pictures $ [Color c $ Polygon [(-halfW - fr, -halfH - fr), (halfW + fr, -halfH - fr), 
-                                                              (halfW + fr, halfH + fr), (-halfW - fr, halfH + fr)], 
-                 Color c $ Polygon [(-halfW, -halfH), (halfW, -halfH), (halfW, halfH), (-halfW, halfH)],
-                 Translate ((-6) * (fromIntegral $ length txtStr)) (-10) 
-                   $ Scale ((fromIntegral (w ) / 800) ) (0.2) $ Color black $ text txtStr] ++ (if hl then
-                   [Color (makeColor 1 1 1 0.5) $ Polygon [(-halfW - fr, -halfH - fr), (halfW + fr, -halfH - fr), 
-                                                              (halfW + fr, halfH + fr), (-halfW - fr, halfH + fr)]]
-                                                              else [])
-                 --scale ((fromIntegral w) / (fromIntegral $ length txtStr) * 3) (15 / (fromIntegral h)) $ Color black $ text txtStr]
+    in Translate x y $ Pictures $ [Color c $ Polygon [(-halfW - fr, -halfH - fr), 
+                                                      (halfW + fr, -halfH - fr), 
+                                                      (halfW + fr, halfH + fr), 
+                                                      (-halfW - fr, halfH + fr)], 
+                                   Color c $ Polygon [(-halfW, -halfH), 
+                                                      (halfW, -halfH), 
+                                                      (halfW, halfH), 
+                                                      (-halfW, halfH)],
+                                      Translate (-halfW) (-(halfH / 2)) 
+                                      $ Scale sc sc
+                                        $ Color black $ text txtStr
+                                   ] 
+                                   ++ (if hl then
+                                     [Color (makeColor 1 1 1 0.5) $ 
+                                       Polygon [(-halfW - fr, -halfH - fr), 
+                                                (halfW + fr, -halfH - fr), 
+                                                (halfW + fr, halfH + fr), 
+                                                (-halfW - fr, halfH + fr)]]
+                                        else [])
     
 renderIButton :: IconButton -> Picture
-renderIButton (IconButton (x, y) w h icon) = do
-     Pictures [Translate x y $ scale 1 1 icon]
-{-
-renderTextBox :: TextBox -> Picture
-renderTextBox (TextBox (x, y) w h strs) = do
+renderIButton (IconButton (x, y) w h icon hl) = do
      let halfW = fromIntegral w / 2
          halfH = fromIntegral h / 2
-     in Translate x y $ Pictures [Color (greyN 0.5) $ Polygon [(-halfW, -halfH), (halfW, -halfH), (halfW, halfH), (-halfW, halfH)], 
-                 Translate ((-6) * (fromIntegral $ length txtStr)) (-10) 
-                   $ Scale ((fromIntegral (w ) / 800) ) (0.2) $ Color black $ text txtStr]
--}
+     Pictures $ [Translate x y $ scale 1 1 icon] ++ (if hl then
+                                     [Translate x y $ Color (makeColor 1 1 1 0.5) $ 
+                                       Polygon [(-halfW, -halfH), 
+                                                (halfW, -halfH), 
+                                                (halfW, halfH), 
+                                                (-halfW, halfH)]]
+                                        else [])
+
+renderTextBox :: TextBox -> Picture
+renderTextBox (TextBox (x, y) w h c sh strs) = do
+     let halfW = fromIntegral w / 2
+         halfH = fromIntegral h / 2
+         borderH = 4 :: Float
+         scaleRate = (sh / 100)
+       in Translate x y $ Pictures $ [Color c $ Polygon [(-halfW, -halfH), 
+                                                               (halfW, -halfH), 
+                                                               (halfW, halfH), 
+                                                               (-halfW, halfH)]] ++ 
+        [Translate (-(halfW)) (halfH - ((sh + borderH) * (fromIntegral (curHStep + 1)))) $ 
+           Scale scaleRate scaleRate $ 
+              Color black $ text (strs !! curHStep) |  curHStep <- [0..((length strs) - 1)]]
+
