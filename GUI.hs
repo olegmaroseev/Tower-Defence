@@ -22,6 +22,11 @@ class GUIObject a where
 
 data GUIElem = forall a. (Typeable a, GUIObject a) => GUIElem a
 
+instance GUIObject GUIElem where
+  renderObject (GUIElem a) = renderObject a
+  updateObject time (GUIElem a) = GUIElem $ updateObject time a
+  eventHandler event (GUIElem a) = GUIElem $ eventHandler event a
+
 runGUI :: Display -> Color -> Int -> [(String, GUIElem)] ->
                           (Event -> [(String, GUIElem)] -> [(String, GUIElem)]) -> 
                           (Float -> [(String, GUIElem)] -> [(String, GUIElem)]) -> IO ()
@@ -32,24 +37,18 @@ runGUI display backColor simResolution
         (\time -> (updateWorld time) . (updateGUI time))
         
 renderGUI :: [(String, GUIElem)] -> Picture
-renderGUI objects = Pictures $ map (renderElem.snd) objects
+renderGUI objects = Pictures $ map (renderObject.snd) objects
         
 handleGUIEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
-handleGUIEvents event objects = map (eventHandlerElem event) objects
+handleGUIEvents event objects = map (\(n, a) -> (n, eventHandler event a)) objects
         
 updateGUI :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
-updateGUI time objects = map (updateElem time) objects
+updateGUI time objects = map (\(n, a) -> (n, updateObject time a)) objects
 
 tower1Path = "pic/tower1.bmp"
 
-renderElem :: GUIElem -> Picture
-renderElem (GUIElem a) = renderObject a
-
-updateElem :: Float -> (String, GUIElem) -> (String, GUIElem)
-updateElem time (name, GUIElem a) = (name, GUIElem $ updateObject time a)
-
-eventHandlerElem :: EventHandler (String, GUIElem)
-eventHandlerElem event (name, GUIElem a) = (name, GUIElem $ eventHandler event a)
+unpackCast :: (GUIObject a, Typeable a) => GUIElem -> Maybe a
+unpackCast (GUIElem a) = cast a
 
 testGUI :: IO()
 testGUI = do
@@ -68,9 +67,7 @@ testGUI = do
 updateAll :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
 updateAll time xs = map update xs
   where
-    update ("TestButton1", GUIElem a) = ("TestButton1", GUIElem $ TextButton (x-time*2, y) w h c t hl)
-      where
-        Just (TextButton (x, y) w h c t hl) = cast a
+    update ("TestButton1",a ) | Just (TextButton (x, y) w h c t hl) <- unpackCast a = ("TestButton1", GUIElem $ TextButton (x-time*2, y) w h c t hl)
     update other = other
          
 data TextButton = TextButton Point   --centerPoint
