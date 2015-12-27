@@ -276,7 +276,9 @@ deleteCurrentTower :: Game -> Game
 deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (name x) /= (selectedTower)) (objects) ) , money = money + sellCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) }
 
 upgradeCurrentTower::Game -> Game
-upgradeCurrentTower = undefined
+upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..}) 	| upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
+																| otherwise = (Game (x,y) w h assets gs)
 
---TODO: tower upgrading, tower selling, pausing game
+
+--TODO: pausing game
 
