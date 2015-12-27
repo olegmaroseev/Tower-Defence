@@ -17,7 +17,10 @@ toParseLevel fName = do
 	let listPoints = map (\x -> (tail.init) x) listOfPoints
 	let listP = map (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) listPoints
 	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
-	putStrLn $ path
+	let wavesFile = tail $ tail $ levLines
+	--вот тут fillEnemies возвращает [IO Enemy], а надо [Enemy]
+	let s = map (\x -> ( read ((words x) !! 0) :: Float , fillEnemies $ tail $ words x ) ) wavesFile
+	return $ (Level levBackground listPFinal s)  
 	
 parseEnemy fName = do	
 	fileLevel <- readFile fName
@@ -30,10 +33,8 @@ parseEnemy fName = do
 	let positionEnemy = (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) $ levLines !! 1	
 	let healthPoints = read (levLines !! 5)::Float
 	let speedPoints = read (levLines !! 4)::Float
-	return $ (Enemy (levLines!!0) positionEnemy enemyPic listPFinal healthPoints speedPoints undefined)
+	let powerPoints = read (levLines !! 6)::Float
+	return $ (Enemy (levLines!!0) positionEnemy enemyPic listPFinal healthPoints speedPoints powerPoints undefined)	
 	
-strToInt::String -> Int
-strToInt s = read s
-	
-map2 = map (\x -> ( read(takeWhile (/= ',' ) x) ::Int, read(tail $ (dropWhile (/= ',' ) x))::Int) )
-ffun = foldl (\x y -> x ++ [y]) [] $ map2 ["1,2","3,4"]
+fillEnemies (x:[]) = [parseEnemy x]
+fillEnemies (x:xs) = [parseEnemy x] ++ fillEnemies xs 
