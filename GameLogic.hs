@@ -233,5 +233,9 @@ handleGameEvents _ g = g
 setPlacingTower :: Game -> Point -> GameObject -> Game
 setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos}, selectedTower = "" } 
 setPlacingTower g _ _ = g
+
+deleteCurrentTower :: Game -> Game
+deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (name x) == (selectedTower)) (objects) ) }
+
 --TODO: tower upgrading, tower selling, pausing game
 
