@@ -48,13 +48,6 @@ updateGUI time objects = map (\(n, a) -> (n, updateObject time a)) objects
 
 unpackCast :: (GUIObject a, Typeable a) => GUIElem -> Maybe a
 unpackCast (GUIElem a) = cast a
-
-updateAll :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
-updateAll time xs = map update xs
-  where
-    update ("TestButton1",a ) | Just (TextButton (x, y) w h sc c t hl) <- unpackCast a = 
-         ("TestButton1", GUIElem $ TextButton (x-time*2, y) w h sc c t hl)
-    update other = other
          
 data TextButton = TextButton Point   --centerPoint
                              Integer --width

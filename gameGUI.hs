@@ -60,24 +60,21 @@ initMainWindow = do
            )
          ]
           (handleEvents)
-          updateAll
+          (\_ -> id)
 
 handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
 handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
   where
-    update ("Game",a ) | Just g <- unpackCast a = 
-         let curBTower = 
-                  case clickedB of "Tower1" -> basicTower
-                                   "None" -> basicTower
-             newG = setPlacingTower g pos (curBTower)
-          in ("Game", GUIElem $ newG)
+    update ("Game",a ) | Just g <- unpackCast a =
+             case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
+                              "None" -> ("Game", a)
     update other = other
-    clickedB = foldl st "None" xs
-    st acc cur = if (isJust el) && hl then (fst cur) else acc
-      where
-        el = unpackCast (snd cur)
-        Just (IconButton (x, y) w h icon hl) = el
     
+    clickedB = foldl st "None" xs
+    st acc cur = if checked then (fst cur) else acc
+      where
+        checked = case unpackCast (snd cur) of 
+          Just (IconButton (x, y) w h icon hl) -> hl
+          Nothing -> False
+        
 handleEvents _ xs = xs
-
--- ("TestButton1",a ) | Just (TextButton (x, y) w h sc c t hl) <- unpackCast a
