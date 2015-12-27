@@ -10,6 +10,7 @@ import GUI
 import Config
 import GameLogic
 import Data.Maybe
+import qualified Data.Map as Map
 
 main = initMainWindow
 
@@ -19,7 +20,7 @@ assetPic picName = do
         curIcon@(Bitmap _ _ _ _) <- loadBMP path
         return curIcon
 
---BasicTower :: GameObject
+
 
 initMainWindow :: IO()
 initMainWindow = do
@@ -27,6 +28,11 @@ initMainWindow = do
         towerIcon2 <- assetPic "Tower2"
         towerIcon3 <- assetPic "Tower3"
         bacgroundPic <- assetPic "Background1"
+        let picLib = (Map.fromList [("Tower1", towerIcon1)
+                                                ,("Tower2", towerIcon2)
+                                                ,("Tower3", towerIcon3)
+                                                ,("Background1", bacgroundPic)
+                                                ])
         runGUI 
          (InWindow "Tower Defence" 
          (width, (height + (controlPanelHeight * 2) + menuPanelHeight))
@@ -39,7 +45,7 @@ initMainWindow = do
           ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1 False))
           ,("Tower2", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 880)), -360) 150 150 towerIcon2 False))
           ,("Tower3", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1040)), -360) 150 150 towerIcon3 False))
-          ,("Game", GUIElem (Game (0, 0) (fromIntegral width) (fromIntegral height)
+          ,("Game", GUIElem (Game (0, 0) (fromIntegral width) (fromIntegral height) picLib
               (GameState
                    (Level bacgroundPic [(0,0)] [])
                    []
