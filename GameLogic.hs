@@ -2,11 +2,12 @@
 module GameLogic where
 
 import GUI
-import Data.Ord
+import Data.Ord (comparing)
 import Data.List
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss
 import Data.Typeable
 import Data.Maybe
 import qualified Data.Map as Map
@@ -18,7 +19,7 @@ type Enemy = GameObject
 data GameObject =
   Tower {   name::String,
             position::Point, 
-            render::AssetLibrary->Picture,
+            render::GameObject -> AssetLibrary->Picture,
             sellCost::Float, 
             upgradeCost::Float, 
             nextUpgrade::Maybe Tower, 
@@ -30,7 +31,7 @@ data GameObject =
             update::GameObject->Float->[GameObject]->[GameObject]} |
   Enemy {   name::String,
             position::Point, 
-            render::AssetLibrary->Picture,
+            render::GameObject -> AssetLibrary->Picture,
             path::[Point],
             speed::Float,
             hitpoints::Float,
@@ -38,7 +39,7 @@ data GameObject =
             update::GameObject->Float->[GameObject]->[GameObject]} |
   Bullet {  name::String,
             position::Point,
-            render::AssetLibrary->Picture,
+            render::GameObject -> AssetLibrary->Picture,
             speed::Float,
             target::String,
             power::Float,
@@ -60,8 +61,8 @@ basicTower = Tower {
             target = "",
             update = basicTowerShoot}
 
-getAsset :: String -> AssetLibrary -> Picture
-getAsset name assets = maybe Blank id $ Map.lookup name assets
+getAsset :: String -> GameObject -> AssetLibrary -> Picture
+getAsset name go assets = Translate (fst $ position go) (snd $ position go) $ maybe Blank id $ Map.lookup name assets
             
 basicTowerUpgrade1 :: GameObject
 basicTowerUpgrade1 = Tower {
@@ -131,8 +132,8 @@ renderGame (Game (x, y) w h assets GameState{..}) = Translate x (y + fromIntegra
                                                 $ Pictures $ (levelP : objectsP ++ placingP)
   where
     levelP = levelPicture level
-    objectsP = map (flip render assets) objects -- TODO: special render for selected tower
-    placingP = map (flip render assets) $ maybeToList placingTower 
+    objectsP = map (\x -> render x x assets) objects -- TODO: special render for selected tower
+    placingP = map (\x -> render x x assets) $ maybeToList placingTower 
 
 objectsOrder :: GameObject -> Int
 objectsOrder Tower{..}  = 1
@@ -167,13 +168,17 @@ isEnemy :: GameObject -> Bool
 isEnemy Enemy{..} = True
 isEnemy _ = False
 
+toGameCoords :: Point -> Integer -> Integer -> Point -> Point
+toGameCoords (gx, gy) w h (x, y) = undefined
 
 handleGameEvents :: Event -> Game -> Game
-handleGameEvents (EventMotion mpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { placingTower = newPlacingTower})
+handleGameEvents (EventMotion rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { placingTower = newPlacingTower })
   where
+    mpos = toGameCoords (x, y) w h rpos
     newPlacingTower = maybe Nothing (\t ->Just t {position = mpos}) placingTower
-handleGameEvents (EventKey (MouseButton LeftButton) Up _ pos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing})
+handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing})
   where
+    pos = toGameCoords (x, y) w h rpos
     place = isPlacementCorrect pos gs
     possibleSelect = maybe selectedTower name $ find (\x -> gameObjectHittest x pos && isTower x) objects
     newSelectedName = if isJust placingTower then selectedTower else possibleSelect
