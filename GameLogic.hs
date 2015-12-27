@@ -28,6 +28,7 @@ data GameObject =
             lastShot::Float,
             power::Float,
             target::String,
+            bulletsCount::Int,
             update::GameObject->Float->[GameObject]->[GameObject]} |
   Enemy {   name::String,
             position::Point, 
@@ -58,6 +59,7 @@ basicTower = Tower {
             lastShot = 0,
             power = 5,
             target = "",
+            bulletsCount = 0,
             update = basicTowerShoot}
 
 getAsset :: String -> GameObject -> AssetLibrary -> Picture
@@ -76,6 +78,7 @@ basicTowerUpgrade1 = Tower {
             lastShot = 0,
             power = 7,
             target = "",
+            bulletsCount = 0,
             update = basicTowerShoot}
 
 basicTowerUpgrade2 :: GameObject
@@ -91,22 +94,26 @@ basicTowerUpgrade2 = Tower {
             lastShot = 0,
             power = 10,
             target = "",
+            bulletsCount = 0,
             update = basicTowerShoot}
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicTowerShoot t time obj = if  target t /= "" 
-                                 && time - lastShot t > cooldown t
-                             then 
-                                 (basicBullet{position = position t}):obj
-                             else
-                              if length newTargets /= 0 then
-                                 replaceGameObject (name t) newTower obj
-                              else
-                                 obj
-                                   where
-                                     newTargets = filter (findTarget (fst $ position t) (snd $ position t) (range t)) obj
-                                     newTower = t{target = (name $ head newTargets)} 
-
+basicTowerShoot t time obj =     if  target t /= "" 
+                                    && lastShot t <= 0
+                                 then do
+                                      (basicBullet{name = bulletName, position = position t}):obj
+                                      replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (bulletsCount t + 1)}) obj
+                                 else
+                                  if length newTargets /= 0 then
+                                     replaceGameObject (name t) newTower obj
+                                  else do
+                                    obj
+                                    replaceGameObject (name t) (t{lastShot = lastShot t - time}) obj
+                                      where
+                                        newTargets = filter (findTarget (fst $ position t) (snd $ position t) (range t)) obj
+                                        newTower = t{target = (name $ head newTargets), lastShot = lastShot t - time}
+                                        bulletName = name t ++ (show $ bulletsCount t) ++ target t
+                                 
 findTarget :: Float -> Float -> Float -> GameObject -> Bool                               
 findTarget x y r t = dist <= r
                                 where
@@ -126,12 +133,33 @@ basicBullet = Bullet {
               }
               
 basicBulletUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicBulletUpdate b time objs = if isJust mB then
+basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
                                     replaceGameObject (name b) (fromJust mB) objs
                                 else
-                                    filter ((/= name b).name) objs
+                                    if isJust shooted then do
+                                        replaceGameObject (name shEn) (shEn{hitpoints = hitpoints shEn - power b}) objs
+                                        delBullet
+                                    else
+                                        delBullet
+                                    
                             where
                              mB = moveBullet time b objs
+                             shooted = (targetShooted b objs)
+                             shEn = (fromJust shooted)
+                             delBullet = filter ((/= name b).name) objs
+
+targetShooted :: GameObject -> [GameObject] -> Maybe GameObject
+targetShooted b@Bullet{..} objs
+       | null target = Nothing
+       | dist <= speed = Just foundTarget
+           where
+            (bx, by) = position
+            (tx, ty) = getPos foundTarget
+            dx = tx - bx
+            dy = ty - by
+            dist = sqrt (dx*dx + dy*dy)
+            foundTarget = head findTargets
+            findTargets = filter (\x -> target == getName x) objs
 
 moveBullet :: Float -> GameObject -> [GameObject] -> Maybe GameObject
 moveBullet delta b@Bullet{..} objs
