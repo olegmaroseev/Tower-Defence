@@ -50,7 +50,7 @@ basicTower :: GameObject
 basicTower = Tower {
             name = "",
             position = (0,0), 
-            render = getAsset "tower1", -- TODO: load a picture of it
+            render = getAsset "tower1",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
@@ -68,7 +68,7 @@ basicTowerUpgrade1 :: GameObject
 basicTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
-            render = getAsset "tower1", -- TODO: load a picture of it
+            render = getAsset "tower1",
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
@@ -83,7 +83,7 @@ basicTowerUpgrade2 :: GameObject
 basicTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
-            render = getAsset "tower1", -- TODO: load a picture of it
+            render = getAsset "tower1", 
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
@@ -97,9 +97,29 @@ basicTowerUpgrade2 = Tower {
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicTowerShoot t time obj = obj--undefined
 
+basicEnemy :: GameObject
+basicEnemy = Enemy {
+            name="",
+            position=(0,0), 
+            render = getAsset "enemy1",
+            path=[],
+            speed=5,
+            hitpoints=10,
+            power=1,
+            update=basicEnemyUpdate
+            }
 
+replace :: (a -> Bool) -> a -> [a] -> [a]
+replace pred new xs = map (\x -> if pred x then new else x) xs
 
+replaceGameObject :: String -> GameObject -> [GameObject] -> [GameObject]
+replaceGameObject n obj xs = replace ((n==).name) obj xs
 
+basicEnemyUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
+basicEnemyUpdate e time objs = replaceGameObject (name e) newEnemy objs
+  where
+    newEnemy = e
+            
 --Wave is (time to wait before starting after previous one, enemies of this wave)
 type Wave = (Float, [Enemy])
 
@@ -195,8 +215,9 @@ handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w 
 handleGameEvents _ g = g
 
 
+
 setPlacingTower :: Game -> Point -> GameObject -> Game
-setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos} } 
+setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos}, selectedTower = "" } 
 setPlacingTower g _ _ = g
 --TODO: tower upgrading, tower selling, pausing game
 
