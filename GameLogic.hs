@@ -183,13 +183,39 @@ updateObjects :: Float -> [GameObject] -> [GameObject]
 updateObjects time xs = foldl (\acc x -> update x x time acc) xs xs
     
 updateGame :: Float -> Game -> Game
-updateGame time (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, lastTime = time})
+updateGame time (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, lastTime = time, level = level {levelWaves = nw}, lives = lives - livesDelta})
   where
     delta = time - lastTime
     individualUpdates = updateObjects delta objects
-    globalUpdates = individualUpdates --undefined -- TODO: wave spawning, check if enemy reached the end
+    (ne, nw) = updateWaves delta $ levelWaves level
+    lpath = map (toGameCoords (x,y) w h) (levelPath level)
+    afterSpawn = case ne of
+                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e lpath) : individualUpdates
+                Nothing -> individualUpdates
+    (livesDelta, afterDeath) = getFinishedEnemies afterSpawn
+    globalUpdates = afterDeath --undefined -- TODO: wave spawning, check if enemy reached the end
     
---updateWaves :: 
+enemyReachedEnd :: Enemy -> Bool
+enemyReachedEnd Enemy{..} = null path
+    
+getFinishedEnemies :: [GameObject] -> (Float, [GameObject])
+getFinishedEnemies xs = foldr step (0, []) xs
+  where
+    step x@Enemy{..} (d, es)
+      | enemyReachedEnd x = (d + power, es)
+      | otherwise = (d, x:es)
+    step x (d, es) = (d, x:es)
+    
+initEnemy :: Enemy -> [Point] -> Enemy
+initEnemy e@Enemy{..} p = e {path = p, position = head p}
+    
+updateWaves :: Float -> [Wave] -> (Maybe Enemy, [Wave])
+updateWaves _ [] = (Nothing, [])
+updateWaves time (w:ws) = case updateWave time w of
+                              (Nothing, nw) -> (Nothing, nw:ws)
+                              (Just e, (_, [])) -> (Just e, ws)
+                              (Just e, nw) -> (Just e, nw:ws)
+
     
 updateWave :: Float -> Wave -> (Maybe Enemy, Wave)
 updateWave dt (spawn, e : es)
