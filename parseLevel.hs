@@ -7,6 +7,7 @@ import GameLogic
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Data.List
+import EnemyBase
 
 toParseLevel fName = do
 	fileLevel <- readFile fName
@@ -18,7 +19,9 @@ toParseLevel fName = do
 	let listP = map (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) listPoints
 	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
 	let wavesFile = tail $ tail $ levLines
-	return $ (Level levBackground listPFinal []) 
+	let mapWL = map (words) wavesFile
+	let pa = map (\x -> (read (x !!0)::Float ,    map (\y -> getEnemy y ) $(tail x)        ))  mapWL
+	return $ (Level levBackground listPFinal pa) 
 
 parseEnemy fName = do	
 	fileLevel <- readFile fName
