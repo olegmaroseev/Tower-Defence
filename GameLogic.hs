@@ -214,18 +214,23 @@ handleGameEvents (EventMotion rpos) (Game (x, y) w h assets gs@GameState{..}) = 
   where
     mpos = toGameCoords (x, y) w h rpos
     newPlacingTower = maybe Nothing (\t ->Just t {position = mpos}) placingTower
-handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing})
+handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing, lastIndex = newIndex})
   where
     pos = toGameCoords (x, y) w h rpos
-    place = isPlacementCorrect pos gs
     possibleSelect = maybe selectedTower name $ find (\x -> gameObjectHittest x pos && isTower x) objects
     newSelectedName = if isJust placingTower then selectedTower else possibleSelect
+    newName = show lastIndex
+    placeTower = isPlacementCorrect pos gs && isJust placingTower
+    newIndex
+      | placeTower = lastIndex + 1
+      | otherwise = lastIndex
     newObjects 
-      | place && isJust placingTower = sortBy (comparing objectsOrder) $ (fromJust placingTower) : objects
+      | placeTower = sortBy (comparing objectsOrder) $ (fromJust placingTower {name = newName}) : objects
       | otherwise = objects
     newPlacing 
-      | place && isJust placingTower = Nothing
+      | placeTower = Nothing
       | otherwise = placingTower
+handleGameEvents (EventKey (MouseButton RightButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { placingTower = Nothing})
 handleGameEvents _ g = g
 
 
