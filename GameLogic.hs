@@ -90,11 +90,11 @@ updateGame :: Float -> Game -> Game
 updateGame time (Game (x, y) w h gs@GameState{..}) = (Game (x, y) w h gs { objects = globalUpdates})
   where
     individualUpdates = updateObjects time objects
-    globalUpdates = undefined -- TODO: wave spawning, check if enemy reached the end
+    globalUpdates = individualUpdates --undefined -- TODO: wave spawning, check if enemy reached the end
 
 --TODO: Check if tower is on the path or collides with other towers
 isPlacementCorrect :: Point -> GameState -> Bool
-isPlacementCorrect pos GameState{..} = undefined
+isPlacementCorrect pos GameState{..} = True --undefined
 
 distance :: Point -> Point -> Float
 distance (x1, y1) (x2, y2) = let dx = x2 - x1 
@@ -122,5 +122,5 @@ handleGameEvents (EventKey (MouseButton LeftButton) Up _ pos) (Game (x, y) w h g
     newPlacing 
       | place && isJust placingTower = Nothing
       | otherwise = placingTower
-
+handleGameEvents _ g = g
 --TODO: tower upgrading, tower selling, pausing game
