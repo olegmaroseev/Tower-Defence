@@ -5,14 +5,8 @@ import Graphics.Gloss
 import Codec.BMP
 import System.Environment
 import GUI
-import Paths
+import Config
 import GameLogic
-
-controlPanelHeight = 80 :: Int
-menuPanelHeight = 0 :: Int
-
-width = 1280 :: Int
-height = 720 :: Int
 
 main = initMainWindow
 

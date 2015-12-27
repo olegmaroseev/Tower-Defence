@@ -9,6 +9,7 @@ import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Interface.Pure.Game
 import Data.Typeable
 import Data.Maybe
+import Config
 
 type Tower = GameObject
 type Enemy = GameObject
@@ -72,7 +73,8 @@ instance GUIObject Game where
   
 --TODO: Actually use w and h parameters (Resize level? And everything else?)
 renderGame :: Game -> Picture
-renderGame (Game (x, y) w h GameState{..}) = Translate x y $ Pictures $ (levelP : objectsP ++ placingP)
+renderGame (Game (x, y) w h GameState{..}) = Translate x (y + fromIntegral Config.controlPanelHeight) 
+                                                $ Pictures $ (levelP : objectsP ++ placingP)
   where
     levelP = levelPicture level
     objectsP = map render objects -- TODO: special render for selected tower

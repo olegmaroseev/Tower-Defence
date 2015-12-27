@@ -6,7 +6,7 @@ import Data.Typeable
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Codec.BMP
-import Paths
+import Config
 
 type EventHandler a = Event -> a -> a
 
