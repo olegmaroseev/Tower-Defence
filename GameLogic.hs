@@ -101,9 +101,9 @@ basicEnemy :: GameObject
 basicEnemy = Enemy {
             name="",
             position=(0,0), 
-            render = getAsset "enemy1",
+            render = getAsset "tower1",--"enemy1",
             path=[],
-            speed=5,
+            speed=50,
             hitpoints=10,
             power=1,
             update=basicEnemyUpdate
@@ -127,7 +127,7 @@ moveEnemy delta e@Enemy{..}
     dy = ny - cy
     dist = sqrt (dx*dx + dy*dy)
     dir = atan2 dy dx
-    movedEnemy = e { position = (cx + delta * cos dir, cy + delta * sin dir) }
+    movedEnemy = e { position = (cx + speed * delta * cos dir, cy + speed * delta * sin dir) }
 
 basicEnemyUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicEnemyUpdate e time objs = replaceGameObject (name e) newEnemy objs
@@ -147,8 +147,7 @@ data GameState = GameState { level :: Level,
                    lives :: Float,
                    objects :: [GameObject],
                    placingTower :: Maybe GameObject,
-                   lastIndex :: Int,
-                   lastTime :: Float
+                   lastIndex :: Int
                    }
 
 type AssetLibrary = Map.Map String Picture
@@ -174,6 +173,8 @@ renderGame (Game (x, y) w h assets GameState{..}) = Translate x y
     objectsP = map (\x -> render x x assets) objects -- TODO: special render for selected tower
     placingP = map (\x -> render x x assets) $ maybeToList placingTower 
 
+--renderSelected
+    
 objectsOrder :: GameObject -> Int
 objectsOrder Tower{..}  = 1
 objectsOrder Enemy{..}  = 2
@@ -183,17 +184,20 @@ updateObjects :: Float -> [GameObject] -> [GameObject]
 updateObjects time xs = foldl (\acc x -> update x x time acc) xs xs
     
 updateGame :: Float -> Game -> Game
-updateGame time (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, lastTime = time, level = level {levelWaves = nw}, lives = lives - livesDelta})
+updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, level = level {levelWaves = nw}, lives = lives - livesDelta, lastIndex = newIndex})
   where
-    delta = time - lastTime
     individualUpdates = updateObjects delta objects
     (ne, nw) = updateWaves delta $ levelWaves level
     lpath = map (toGameCoords (x,y) w h) (levelPath level)
+    newName = show lastIndex
+    newIndex
+      | isJust ne = lastIndex + 1
+      | otherwise = lastIndex
     afterSpawn = case ne of
-                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e lpath) : individualUpdates
+                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e (show newIndex) lpath) : individualUpdates
                 Nothing -> individualUpdates
     (livesDelta, afterDeath) = getFinishedEnemies afterSpawn
-    globalUpdates = afterDeath --undefined -- TODO: wave spawning, check if enemy reached the end
+    globalUpdates = afterDeath 
     
 enemyReachedEnd :: Enemy -> Bool
 enemyReachedEnd Enemy{..} = null path
@@ -206,8 +210,8 @@ getFinishedEnemies xs = foldr step (0, []) xs
       | otherwise = (d, x:es)
     step x (d, es) = (d, x:es)
     
-initEnemy :: Enemy -> [Point] -> Enemy
-initEnemy e@Enemy{..} p = e {path = p, position = head p}
+initEnemy :: Enemy -> String -> [Point] -> Enemy
+initEnemy e@Enemy{..} n p = e {path = p, position = head p, name = n}
     
 updateWaves :: Float -> [Wave] -> (Maybe Enemy, [Wave])
 updateWaves _ [] = (Nothing, [])
@@ -276,8 +280,9 @@ deleteCurrentTower :: Game -> Game
 deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (name x) /= (selectedTower)) (objects) ) , money = money + sellCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) }
 
 upgradeCurrentTower::Game -> Game
-upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..}) 	| upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
-																| otherwise = (Game (x,y) w h assets gs)
+upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})
+          | upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
+          | otherwise = (Game (x,y) w h assets gs)
 
 
 --TODO: pausing game
