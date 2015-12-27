@@ -20,10 +20,11 @@ data GameObject =
             render::Picture,
             sellCost::Float, 
             upgradeCost::Float, 
-            nextUpgrade::Tower, 
+            nextUpgrade::Maybe Tower, 
             range::Float,
             cooldown::Float,
             lastShot::Float,
+            power::Float,
             target::String,
             update::Float->[GameObject]->[GameObject]} |
   Enemy {   name::String,
@@ -43,7 +44,47 @@ data GameObject =
             lifeTime::Float,
             update::Float->[GameObject]->[GameObject]} 
 
+basicTower :: GameObject
+basicTower = Tower {
+            render = undefined, -- TODO: load a picture of it
+            sellCost = 5, 
+            upgradeCost = 10, 
+            nextUpgrade = Just basicTowerUpgrade1, 
+            range = 10,
+            cooldown = 5,
+            lastShot = 0,
+            power = 5,
+            target = "",
+            update = basicTowerShoot}
 
+basicTowerUpgrade1 :: GameObject
+basicTowerUpgrade1 = Tower {
+            render = undefined, -- TODO: load a picture of it
+            sellCost = 10, 
+            upgradeCost = 20, 
+            nextUpgrade = Just basicTowerUpgrade2, 
+            range = 15,
+            cooldown = 3,
+            lastShot = 0,
+            power = 7,
+            target = "",
+            update = basicTowerShoot}
+
+basicTowerUpgrade2 :: GameObject
+basicTowerUpgrade2 = Tower {
+            render = undefined, -- TODO: load a picture of it
+            sellCost = 20, 
+            upgradeCost = 0, 
+            nextUpgrade = Nothing, 
+            range = 20,
+            cooldown = 2,
+            lastShot = 0,
+            power = 10,
+            target = "",
+            update = basicTowerShoot}
+            
+basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
+basicTowerShoot t time obj = undefined
           
 --Wave is (time to wait before starting after previous one, enemies of this wave)
 type Wave = (Float, [Enemy])
@@ -108,6 +149,11 @@ gameObjectHittest t p = 20 > distance p (position t)
 isTower :: GameObject -> Bool
 isTower Tower{..} = True
 isTower _ = False
+
+isEnemy :: GameObject -> Bool
+isEnemy Enemy{..} = True
+isEnemy _ = False
+
 
 handleGameEvents :: Event -> Game -> Game
 handleGameEvents (EventMotion mpos) (Game (x, y) w h gs@GameState{..}) = (Game (x, y) w h gs { placingTower = newPlacingTower})
