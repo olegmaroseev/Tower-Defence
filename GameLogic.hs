@@ -20,8 +20,8 @@ data GameObject =
   Tower {   name::String,
             position::Point, 
             render::GameObject -> AssetLibrary->Picture,
-            sellCost::Float, 
-            upgradeCost::Float, 
+            sellCost::Int, 
+            upgradeCost::Int, 
             nextUpgrade::Maybe Tower, 
             range::Float,
             cooldown::Float,
@@ -273,7 +273,7 @@ setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} = Game (x,y) w h asse
 setPlacingTower g _ _ = g
 
 deleteCurrentTower :: Game -> Game
-deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (name x) /= (selectedTower)) (objects) ) }
+deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (name x) /= (selectedTower)) (objects) ) , money = money + sellCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) }
 
 upgradeCurrentTower::Game -> Game
 upgradeCurrentTower = undefined
