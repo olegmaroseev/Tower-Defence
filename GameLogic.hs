@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards#-}
 module GameLogic where
 
 import GUI
@@ -95,7 +95,71 @@ basicTowerUpgrade2 = Tower {
             update = basicTowerShoot}
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicTowerShoot t time obj = obj--undefined
+basicTowerShoot t time obj = if  target t /= "" 
+                                 && time - lastShot t > cooldown t
+                             then 
+                                 (basicBullet{position = position t}):obj
+                             else
+                              if length newTargets /= 0 then
+                                 replaceGameObject (name t) newTower obj
+                              else
+                                 obj
+                                   where
+                                     newTargets = filter (findTarget (fst $ position t) (snd $ position t) (range t)) obj
+                                     newTower = t{target = (name $ head newTargets)} 
+
+findTarget :: Float -> Float -> Float -> GameObject -> Bool                               
+findTarget x y r t = dist <= r
+                                where
+                                  dx = x - (fst (position t))
+                                  dy = y - (snd (position t))
+                                  dist = sqrt (dx*dx + dy*dy)
+
+findTarget _ _ _ _ = False
+
+basicBullet :: GameObject
+basicBullet = Bullet {
+               name = ""
+              ,position = (0,0)
+              ,render = getAsset "bullet1"
+              ,speed = 10
+              ,target = ""
+              ,power = 1
+              ,lifeTime = 1
+              ,update = basicBulletUpdate
+              }
+              
+basicBulletUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
+basicBulletUpdate b time objs = if isJust mB then
+                                    replaceGameObject (name b) (fromJust mB) objs
+                                else
+                                    filter ((/= name b).name) objs
+                            where
+                             mB = moveBullet time b objs
+
+moveBullet :: Float -> GameObject -> [GameObject] -> Maybe GameObject
+moveBullet delta b@Bullet{..} objs
+  | null target = Nothing
+  | otherwise = if length findTargets /= 0 then
+                    Just movedBullet
+                else
+                    Nothing
+  where
+    (bx, by) = position
+    (tx, ty) = getPos foundTarget
+    dx = tx - bx
+    dy = ty - by
+    dist = sqrt (dx*dx + dy*dy)
+    dir = atan2 dy dx
+    movedBullet = b { position = (bx + speed * delta * cos dir, by + speed * delta * sin dir) } 
+    foundTarget = head findTargets
+    findTargets = filter (\x -> target == getName x) objs
+
+getName :: GameObject -> String
+getName = name
+
+getPos :: GameObject -> Point
+getPos = position
 
 basicEnemy :: GameObject
 basicEnemy = Enemy {
