@@ -28,11 +28,11 @@ initMainWindow = do
         towerIcon2 <- assetPic "Tower2"
         towerIcon3 <- assetPic "Tower3"
         bacgroundPic <- assetPic "Background1"
-        let picLib = (Map.fromList [("Tower1", towerIcon1)
-                                                ,("Tower2", towerIcon2)
-                                                ,("Tower3", towerIcon3)
-                                                ,("Background1", bacgroundPic)
-                                                ])
+        let picLib = (Map.fromList [("tower1", towerIcon1)
+                                   ,("tower2", towerIcon2)
+                                   ,("tower3", towerIcon3)
+                                   ,("Background1", bacgroundPic)
+                                   ])
         runGUI 
          (InWindow "Tower Defence" 
          (width, (height + (controlPanelHeight * 2) + menuPanelHeight))
