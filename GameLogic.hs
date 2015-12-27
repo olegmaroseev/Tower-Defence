@@ -115,10 +115,24 @@ replace pred new xs = map (\x -> if pred x then new else x) xs
 replaceGameObject :: String -> GameObject -> [GameObject] -> [GameObject]
 replaceGameObject n obj xs = replace ((n==).name) obj xs
 
+moveEnemy :: GameObject -> GameObject
+moveEnemy e@Enemy{..}
+  | null path = e
+  | dist < 1 = e { position = (nx, ny), path = tail path }
+  | otherwise = movedEnemy
+  where
+    (cx, cy) = position
+    (nx, ny) = head path
+    dx = nx - cx
+    dy = ny - cy
+    dist = sqrt (dx*dx + dy*dy)
+    dir = atan2 dy dx
+    movedEnemy = e { position = (cx + cos dir, cy + sin dir) }
+
 basicEnemyUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicEnemyUpdate e time objs = replaceGameObject (name e) newEnemy objs
   where
-    newEnemy = e
+    newEnemy = moveEnemy e
             
 --Wave is (time to wait before starting after previous one, enemies of this wave)
 type Wave = (Float, [Enemy])
