@@ -125,4 +125,9 @@ handleGameEvents (EventKey (MouseButton LeftButton) Up _ pos) (Game (x, y) w h g
       | place && isJust placingTower = Nothing
       | otherwise = placingTower
 handleGameEvents _ g = g
+
+
+setPlacingTower :: Game -> GameObject -> Game
+setPlacingTower (Game (x,y) w h gs) t@Tower{..} = Game (x,y) w h gs {placingTower = Just t} 
 --TODO: tower upgrading, tower selling, pausing game
+
