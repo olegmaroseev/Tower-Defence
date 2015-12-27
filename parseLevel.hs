@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 module ParseLevel where
 
 import System.IO
@@ -7,6 +8,7 @@ import GameLogic
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Data.List
+import Control.Monad
 
 toParseLevel fName = do
 	fileLevel <- readFile fName
@@ -18,7 +20,7 @@ toParseLevel fName = do
 	let listP = map (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) listPoints
 	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
 	let wavesFile = tail $ tail $ levLines
-	let s = map (\x ->  (( read ((words x) !! 0) :: Float) , mapM (parseEnemy) $ tail $ words x ) ) wavesFile
+	let s = map (\x ->  liftM (( read ((words x) !! 0) :: Float) ,) mapM (parseEnemy) $ tail $ words x  ) wavesFile
 	return $ (Level levBackground listPFinal undefined) 
 
 parseEnemy fName = do	

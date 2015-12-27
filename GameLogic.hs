@@ -47,6 +47,8 @@ data GameObject =
 
 basicTower :: GameObject
 basicTower = Tower {
+            name = "",
+            position = (0,0), 
             render = getAsset "tower1", -- TODO: load a picture of it
             sellCost = 5, 
             upgradeCost = 10, 
@@ -63,6 +65,8 @@ getAsset name assets = maybe Blank id $ Map.lookup name assets
             
 basicTowerUpgrade1 :: GameObject
 basicTowerUpgrade1 = Tower {
+            name = "",
+            position = (0,0), 
             render = getAsset "tower1", -- TODO: load a picture of it
             sellCost = 10, 
             upgradeCost = 20, 
@@ -76,6 +80,8 @@ basicTowerUpgrade1 = Tower {
 
 basicTowerUpgrade2 :: GameObject
 basicTowerUpgrade2 = Tower {
+            name = "",
+            position = (0,0), 
             render = getAsset "tower1", -- TODO: load a picture of it
             sellCost = 20, 
             upgradeCost = 0, 
@@ -88,7 +94,7 @@ basicTowerUpgrade2 = Tower {
             update = basicTowerShoot}
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicTowerShoot t time obj = undefined
+basicTowerShoot t time obj = obj--undefined
           
 --Wave is (time to wait before starting after previous one, enemies of this wave)
 type Wave = (Float, [Enemy])
@@ -182,5 +188,6 @@ handleGameEvents _ g = g
 
 setPlacingTower :: Game -> GameObject -> Game
 setPlacingTower (Game (x,y) w h assets gs) t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t} 
+setPlacingTower g _ = g
 --TODO: tower upgrading, tower selling, pausing game
 

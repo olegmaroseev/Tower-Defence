@@ -58,14 +58,15 @@ initMainWindow = do
             )
            )
          ]
-          (placeNewTower)
+          (handleEvents)
           updateAll
 
-placeNewTower :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
-placeNewTower (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
+handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
+handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
   where
     update ("Game",a ) | Just g <- unpackCast a = 
          let  curBTower = basicTower
               newG = setPlacingTower g (curBTower)
           in ("Game", GUIElem $ newG)
     update other = other
+handleEvents _ xs = xs
