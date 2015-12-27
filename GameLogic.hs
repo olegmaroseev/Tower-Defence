@@ -53,7 +53,7 @@ basicTower = Tower {
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
-            range = 10,
+            range = 100,
             cooldown = 5,
             lastShot = 0,
             power = 5,
@@ -71,7 +71,7 @@ basicTowerUpgrade1 = Tower {
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
-            range = 15,
+            range = 150,
             cooldown = 3,
             lastShot = 0,
             power = 7,
@@ -86,7 +86,7 @@ basicTowerUpgrade2 = Tower {
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
-            range = 20,
+            range = 200,
             cooldown = 2,
             lastShot = 0,
             power = 10,
@@ -230,10 +230,18 @@ renderGame (Game (x, y) w h assets GameState{..}) = Translate x y
                                                 $ Pictures $ (levelP : objectsP ++ placingP)
   where
     levelP = levelPicture level
-    objectsP = map (\x -> render x x assets) objects -- TODO: special render for selected tower
-    placingP = map (\x -> render x x assets) $ maybeToList placingTower 
+    objectsP = map (\x -> Pictures $ ((render x x assets) : if (selectedTower == name x) then [renderSelected x] else [] )) objects 
+    placingP = maybe [] (\x -> [render x x assets, renderSelected x]) placingTower 
 
---renderSelected
+filledCircle :: Int -> Float -> Picture
+filledCircle n r = Polygon p
+  where
+    (p, _) = foldl step ([], 0) [1..n]
+    step (acc, angle) _ = ((r * cos angle, r * sin angle):acc, angle + 2*pi / fromIntegral n)
+    
+renderSelected :: GameObject -> Picture
+renderSelected Tower{..} = Translate (fst position) (snd position) $ Color (makeColor 1 1 1 0.5) $ filledCircle 500 range
+renderSelected _ = Blank
     
 objectsOrder :: GameObject -> Int
 objectsOrder Tower{..}  = 1
@@ -316,7 +324,7 @@ handleGameEvents (EventMotion rpos) (Game (x, y) w h assets gs@GameState{..}) = 
 handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing, lastIndex = newIndex})
   where
     pos = toGameCoords (x, y) w h rpos
-    possibleSelect = maybe selectedTower name $ find (\x -> gameObjectHittest x pos && isTower x) objects
+    possibleSelect = maybe "" name $ find (\x -> gameObjectHittest x pos && isTower x) objects
     newSelectedName = if isJust placingTower then selectedTower else possibleSelect
     newName = show lastIndex
     placeTower = isPlacementCorrect pos gs && isJust placingTower
