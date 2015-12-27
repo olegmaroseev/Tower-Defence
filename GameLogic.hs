@@ -115,8 +115,8 @@ replace pred new xs = map (\x -> if pred x then new else x) xs
 replaceGameObject :: String -> GameObject -> [GameObject] -> [GameObject]
 replaceGameObject n obj xs = replace ((n==).name) obj xs
 
-moveEnemy :: GameObject -> GameObject
-moveEnemy e@Enemy{..}
+moveEnemy :: Float -> GameObject -> GameObject
+moveEnemy delta e@Enemy{..}
   | null path = e
   | dist < 1 = e { position = (nx, ny), path = tail path }
   | otherwise = movedEnemy
@@ -127,12 +127,12 @@ moveEnemy e@Enemy{..}
     dy = ny - cy
     dist = sqrt (dx*dx + dy*dy)
     dir = atan2 dy dx
-    movedEnemy = e { position = (cx + cos dir, cy + sin dir) }
+    movedEnemy = e { position = (cx + delta * cos dir, cy + delta * sin dir) }
 
 basicEnemyUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicEnemyUpdate e time objs = replaceGameObject (name e) newEnemy objs
   where
-    newEnemy = moveEnemy e
+    newEnemy = moveEnemy time e
             
 --Wave is (time to wait before starting after previous one, enemies of this wave)
 type Wave = (Float, [Enemy])
@@ -147,7 +147,8 @@ data GameState = GameState { level :: Level,
                    lives :: Float,
                    objects :: [GameObject],
                    placingTower :: Maybe GameObject,
-                   lastIndex :: Int
+                   lastIndex :: Int,
+                   lastTime :: Float
                    }
 
 type AssetLibrary = Map.Map String Picture
@@ -182,11 +183,19 @@ updateObjects :: Float -> [GameObject] -> [GameObject]
 updateObjects time xs = foldl (\acc x -> update x x time acc) xs xs
     
 updateGame :: Float -> Game -> Game
-updateGame time (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates})
+updateGame time (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, lastTime = time})
   where
-    individualUpdates = updateObjects time objects
+    delta = time - lastTime
+    individualUpdates = updateObjects delta objects
     globalUpdates = individualUpdates --undefined -- TODO: wave spawning, check if enemy reached the end
-
+    
+--updateWaves :: 
+    
+updateWave :: Float -> Wave -> (Maybe Enemy, Wave)
+updateWave dt (spawn, e : es)
+  | spawn > dt = (Nothing, (spawn - dt, e:es) )
+  | otherwise = (Just e, (1, es) )  
+    
 --TODO: Check if tower is on the path or collides with other towers
 isPlacementCorrect :: Point -> GameState -> Bool
 isPlacementCorrect pos GameState{..} = True --undefined
@@ -225,7 +234,7 @@ handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w 
       | placeTower = lastIndex + 1
       | otherwise = lastIndex
     newObjects 
-      | placeTower = sortBy (comparing objectsOrder) $ (fromJust placingTower {name = newName}) : objects
+      | placeTower = sortBy (comparing objectsOrder) $ ((fromJust placingTower) {name = newName}) : objects
       | otherwise = objects
     newPlacing 
       | placeTower = Nothing
