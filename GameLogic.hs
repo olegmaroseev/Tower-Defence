@@ -122,4 +122,5 @@ handleGameEvents (EventKey (MouseButton LeftButton) Up _ pos) (Game (x, y) w h g
     newPlacing 
       | place && isJust placingTower = Nothing
       | otherwise = placingTower
+
 --TODO: tower upgrading, tower selling, pausing game

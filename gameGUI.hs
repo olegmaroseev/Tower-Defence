@@ -6,6 +6,7 @@ import Codec.BMP
 import System.Environment
 import GUI
 import Paths
+import GameLogic
 
 controlPanelHeight = 80 :: Int
 menuPanelHeight = 0 :: Int
@@ -26,6 +27,7 @@ initMainWindow = do
         towerIcon1 <- assetPic "Tower1"
         towerIcon2 <- assetPic "Tower2"
         towerIcon3 <- assetPic "Tower3"
+        bacgroundPic <- assetPic "Background1"
         runGUI 
          (InWindow "Tower Defence" 
          (width, (height + (controlPanelHeight * 2) + menuPanelHeight))
@@ -38,6 +40,18 @@ initMainWindow = do
           ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1 False))
           ,("Tower2", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 880)), -360) 150 150 towerIcon2 False))
           ,("Tower3", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1040)), -360) 150 150 towerIcon3 False))
+          ,("Game", GUIElem (Game (0, 0) (fromIntegral width) (fromIntegral height)
+              (GameState
+                   (Level bacgroundPic [(0,0)] [])
+                   []
+                   0 
+                   False
+                   ""
+                   100
+                   [] 
+                   Nothing)
+            )
+           )
          ]
           (\_ -> id)
           updateAll
