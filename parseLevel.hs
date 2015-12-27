@@ -18,24 +18,15 @@ toParseLevel fName = do
 	let listP = map (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) listPoints
 	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
 	let wavesFile = tail $ tail $ levLines
-	--вот тут fillEnemies возвращает [IO Enemy], а надо [Enemy]
-  filledEnemies <- sequence $ map parseEnemy $ tail $ words x
-	let s = map (\x -> ( read ((words x) !! 0) :: Float , filledEnemies ) ) wavesFile
-	return $ (Level levBackground listPFinal s)  
-	
+	let s = map (\x ->  (( read ((words x) !! 0) :: Float) , mapM (parseEnemy) $ tail $ words x ) ) wavesFile
+	return $ (Level levBackground listPFinal undefined) 
+
 parseEnemy fName = do	
 	fileLevel <- readFile fName
 	let levLines = lines fileLevel
 	enemyPic@(Bitmap _ _ _ _) <- loadBMP $ levLines !! 2
-	let listOfPoints = words $ levLines !! 3
-	let listPoints = map (\x -> (tail.init) x) listOfPoints
-	let listP = map (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) listPoints
-	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
 	let positionEnemy = (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) $ levLines !! 1	
-	let healthPoints = read (levLines !! 5)::Float
+	let healthPoints = read (levLines !! 3)::Float
 	let speedPoints = read (levLines !! 4)::Float
-	let powerPoints = read (levLines !! 6)::Float
-	return $ (Enemy (levLines!!0) positionEnemy enemyPic listPFinal healthPoints speedPoints powerPoints undefined)	
-	
-fillEnemies (x:[]) = [parseEnemy x]
-fillEnemies (x:xs) = [parseEnemy x] ++ fillEnemies xs 
+	let powerPoints = read (levLines !! 5)::Float
+	return $ (Enemy (levLines!!0) positionEnemy enemyPic undefined healthPoints speedPoints powerPoints undefined)
