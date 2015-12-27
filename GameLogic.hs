@@ -43,7 +43,6 @@ data GameObject =
             speed::Float,
             target::String,
             power::Float,
-            lifeTime::Float,
             update::GameObject->Float->[GameObject]->[GameObject]} 
 
 basicTower :: GameObject
@@ -115,8 +114,6 @@ findTarget x y r t = dist <= r
                                   dy = y - (snd (position t))
                                   dist = sqrt (dx*dx + dy*dy)
 
-findTarget _ _ _ _ = False
-
 basicBullet :: GameObject
 basicBullet = Bullet {
                name = ""
@@ -125,7 +122,6 @@ basicBullet = Bullet {
               ,speed = 10
               ,target = ""
               ,power = 1
-              ,lifeTime = 1
               ,update = basicBulletUpdate
               }
               
