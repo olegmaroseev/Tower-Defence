@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 --module GameGUI where
 
 import Graphics.Gloss.Interface.Pure.Game
@@ -7,6 +9,7 @@ import System.Environment
 import GUI
 import Config
 import GameLogic
+import Data.Maybe
 
 main = initMainWindow
 
@@ -15,6 +18,8 @@ assetPic picName = do
         let path = snd $ head $ filter (\(s, p) -> s == picName) picBase
         curIcon@(Bitmap _ _ _ _) <- loadBMP path
         return curIcon
+
+--BasicTower :: GameObject
 
 initMainWindow :: IO()
 initMainWindow = do
@@ -47,6 +52,14 @@ initMainWindow = do
             )
            )
          ]
-          (\_ -> id)
+          (placeNewTower)
           updateAll
 
+placeNewTower :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
+placeNewTower (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
+  where
+    update ("Game",a ) | Just g <- unpackCast a = 
+         let  curBTower = basicTower
+              newG = setPlacingTower g (curBTower)
+          in ("Game", GUIElem $ newG)
+    update other = other
