@@ -26,7 +26,7 @@ data GameObject =
             lastShot::Float,
             power::Float,
             target::String,
-            update::Float->[GameObject]->[GameObject]} |
+            update::GameObject->Float->[GameObject]->[GameObject]} |
   Enemy {   name::String,
             position::Point, 
             render::Picture,
@@ -34,7 +34,7 @@ data GameObject =
             speed::Float,
             hitpoints::Float,
             power::Float,
-            update::Float->[GameObject]->[GameObject]} |
+            update::GameObject->Float->[GameObject]->[GameObject]} |
   Bullet {  name::String,
             position::Point,
             render::Picture,
@@ -42,7 +42,7 @@ data GameObject =
             target::String,
             power::Float,
             lifeTime::Float,
-            update::Float->[GameObject]->[GameObject]} 
+            update::GameObject->Float->[GameObject]->[GameObject]} 
 
 basicTower :: GameObject
 basicTower = Tower {
@@ -127,7 +127,7 @@ objectsOrder Enemy{..}  = 2
 objectsOrder Bullet{..} = 3
 
 updateObjects :: Float -> [GameObject] -> [GameObject]
-updateObjects time xs = foldl (\acc x -> update x time acc) xs xs
+updateObjects time xs = foldl (\acc x -> update x x time acc) xs xs
     
 updateGame :: Float -> Game -> Game
 updateGame time (Game (x, y) w h gs@GameState{..}) = (Game (x, y) w h gs { objects = globalUpdates})

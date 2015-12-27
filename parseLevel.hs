@@ -19,7 +19,8 @@ toParseLevel fName = do
 	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
 	let wavesFile = tail $ tail $ levLines
 	--вот тут fillEnemies возвращает [IO Enemy], а надо [Enemy]
-	let s = map (\x -> ( read ((words x) !! 0) :: Float , fillEnemies $ tail $ words x ) ) wavesFile
+  filledEnemies <- sequence $ map parseEnemy $ tail $ words x
+	let s = map (\x -> ( read ((words x) !! 0) :: Float , filledEnemies ) ) wavesFile
 	return $ (Level levBackground listPFinal s)  
 	
 parseEnemy fName = do	
