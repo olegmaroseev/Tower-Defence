@@ -54,7 +54,8 @@ initMainWindow = do
                    ""
                    100
                    [] 
-                   Nothing)
+                   Nothing
+                   0)
             )
            )
          ]
@@ -66,7 +67,7 @@ handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
   where
     update ("Game",a ) | Just g <- unpackCast a = 
          let  curBTower = basicTower
-              newG = setPlacingTower g (curBTower)
+              newG = setPlacingTower g pos (curBTower)
           in ("Game", GUIElem $ newG)
     update other = other
 handleEvents _ xs = xs

@@ -96,7 +96,10 @@ basicTowerUpgrade2 = Tower {
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicTowerShoot t time obj = obj--undefined
-          
+
+
+
+
 --Wave is (time to wait before starting after previous one, enemies of this wave)
 type Wave = (Float, [Enemy])
 
@@ -109,7 +112,8 @@ data GameState = GameState { level :: Level,
                    selectedTower :: String,
                    lives :: Float,
                    objects :: [GameObject],
-                   placingTower :: Maybe GameObject
+                   placingTower :: Maybe GameObject,
+                   lastIndex :: Int
                    }
 
 type AssetLibrary = Map.Map String Picture
@@ -191,8 +195,8 @@ handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w 
 handleGameEvents _ g = g
 
 
-setPlacingTower :: Game -> GameObject -> Game
-setPlacingTower (Game (x,y) w h assets gs) t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t} 
-setPlacingTower g _ = g
+setPlacingTower :: Game -> Point -> GameObject -> Game
+setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos} } 
+setPlacingTower g _ _ = g
 --TODO: tower upgrading, tower selling, pausing game
 
