@@ -22,15 +22,15 @@ toParseLevel fName = do
 parseEnemy fName = do	
 	fileLevel <- readFile fName
 	let levLines = lines fileLevel
-	let listOfPoints = words $ levLines !! 0
+	enemyPic@(Bitmap _ _ _ _) <- loadBMP $ levLines !! 2
+	let listOfPoints = words $ levLines !! 3
 	let listPoints = map (\x -> (tail.init) x) listOfPoints
 	let listP = map (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) listPoints
 	let listPFinal = foldl (\x y -> x ++ [y]) [] listP
-	let healthPoints = read (levLines !! 1)::Float
-	let speedPoints = read (levLines !! 2)::Float
-	return $ (Enemy listPFinal healthPoints speedPoints)
-	
-	
+	let positionEnemy = (\x -> ( read(takeWhile (/= ',' ) x) ::Float, read(tail $ (dropWhile (/= ',' ) x))::Float) ) $ levLines !! 1	
+	let healthPoints = read (levLines !! 5)::Float
+	let speedPoints = read (levLines !! 4)::Float
+	return $ (Enemy (levLines!!0) positionEnemy enemyPic listPFinal healthPoints speedPoints undefined)
 	
 strToInt::String -> Int
 strToInt s = read s
