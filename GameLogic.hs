@@ -128,7 +128,7 @@ instance GUIObject Game where
   
 --TODO: Actually use w and h parameters (Resize level? And everything else?)
 renderGame :: Game -> Picture
-renderGame (Game (x, y) w h assets GameState{..}) = Translate x (y + fromIntegral Config.controlPanelHeight) 
+renderGame (Game (x, y) w h assets GameState{..}) = Translate x y 
                                                 $ Pictures $ (levelP : objectsP ++ placingP)
   where
     levelP = levelPicture level
@@ -169,7 +169,7 @@ isEnemy Enemy{..} = True
 isEnemy _ = False
 
 toGameCoords :: Point -> Integer -> Integer -> Point -> Point
-toGameCoords (gx, gy) w h (x, y) = undefined
+toGameCoords (gx, gy) w h (x, y) = (x - gx, y - gy)
 
 handleGameEvents :: Event -> Game -> Game
 handleGameEvents (EventMotion rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { placingTower = newPlacingTower })
