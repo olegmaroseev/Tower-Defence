@@ -11,6 +11,7 @@ import Config
 import GameLogic
 import Data.Maybe
 import qualified Data.Map as Map
+import Data.List
 
 main = initMainWindow
 
@@ -62,7 +63,7 @@ initMainWindow = do
            )
          ]
           (handleEvents)
-          (\_ -> id)
+          (Main.updateObjects)
 
 handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
 handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
@@ -80,3 +81,14 @@ handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
           Nothing -> False
         
 handleEvents _ xs = xs
+
+updateObjects :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
+updateObjects time objs = map update objs
+  where
+    update ("Stats", _) = ("Stats", GUIElem $ (TextBox (-385,-360) 500 150 (greyN 0.5) 30 (["Stats:"] ++ info)))
+            where
+              curObj = snd $ fromJust $ find (\(n, ob)-> n == "Game") objs
+              Just game@(Game (x, y) w h assets GameState{..}) = unpackCast curObj
+              info = ["Coins: " ++ (show money), "Life: " ++ (show lives)]
+    update other = other
+

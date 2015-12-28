@@ -100,6 +100,7 @@ instance GUIObject IconButton where
 
 instance GUIObject TextBox where
   renderObject = renderTextBox
+  
                        
 renderTButton :: TextButton -> Picture
 renderTButton (TextButton (x, y) w h sc c txtStr hl) = 
