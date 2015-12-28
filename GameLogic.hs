@@ -59,7 +59,7 @@ basicTower = Tower {
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
             range = 300,
-            cooldown = 5,
+            cooldown = 0.5,
             lastShot = 0,
             power = 5,
             target = "",
@@ -77,7 +77,7 @@ basicTowerUpgrade1 = Tower {
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
             range = 500,
-            cooldown = 3,
+            cooldown = 0.3,
             lastShot = 0,
             power = 7,
             target = "",
@@ -94,7 +94,7 @@ basicTowerUpgrade2 = Tower {
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
             range = 700,
-            cooldown = 1,
+            cooldown = 0.2,
             lastShot = 0,
             power = 10,
             target = "",
@@ -106,13 +106,14 @@ basicTowerShoot t time obj =     if  target t /= ""
                                     && lastShot t <= 0
                                  then sortBy (comparing objectsOrder) $ (basicBullet{name = bulletName, position = position t, target = target t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (1 + bulletsCount t)}) obj)
                                  else
-                                  if target t /= "" then
+                                  if target t /= "" && isJust oldtarget then
                                     replaceGameObject (name t) t{lastShot = lastShot t - time} obj
                                   else if length newTargets /= 0 then
                                      replaceGameObject (name t) newTower obj
                                   else 
-                                    replaceGameObject (name t) (t{lastShot = lastShot t - time}) obj
+                                    replaceGameObject (name t) (t{target = "", lastShot = lastShot t - time}) obj
                                       where
+                                        oldtarget = find (\x -> target t == name x) obj
                                         newTargets = sortBy (comparing snd) $ filter (\(_, d) -> d>=0 && d<=range t) $ map (mapDistance (fst $ position t) (snd $ position t)) obj
                                         newTower = t{target = (fst $ head newTargets), lastShot = lastShot t - time}
                                         bulletName = name t ++ (show $ bulletsCount t) ++ target t

@@ -51,7 +51,7 @@ initMainWindow = do
               (GameState
                    (Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(1, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])])
                    []
-                   0 
+                   10000 
                    False
                    ""
                    100
