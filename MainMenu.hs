@@ -118,7 +118,7 @@ handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
 handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = if isJust clickedSpecial then (fromJust clickedSpecial) else map update xs
   where
     update ("Game",a ) | Just g <- unpackCast a =
-             case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
+             case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos archerTower)
                               "Tower2" -> ("Game", GUIElem $ setPlacingTower g pos magicTower)
                               "Tower3" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
                               "Update" -> ("Game", GUIElem $ upgradeCurrentTower g)
