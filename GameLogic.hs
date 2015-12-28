@@ -20,7 +20,7 @@ type Enemy = GameObject
 data GameObject =
   Tower {   name::String,
             position::Point, 
-			price::Int,
+            price::Int,
             render::GameObject -> AssetLibrary->Picture,
             sellCost::Int, 
             upgradeCost::Int, 
@@ -53,7 +53,7 @@ basicTower :: GameObject
 basicTower = Tower {
             name = "",
             position = (0,0), 
-			price = 5,
+            price = 5,
             render = getAsset "tower1",
             sellCost = 5, 
             upgradeCost = 10, 
@@ -71,7 +71,7 @@ basicTowerUpgrade1 :: GameObject
 basicTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
-			price = 5,
+            price = 5,
             render = getAsset "tower1",
             sellCost = 10, 
             upgradeCost = 20, 
@@ -395,7 +395,7 @@ handleGameEvents (EventKey (MouseButton RightButton) Down _ rpos) (Game (x, y) w
 handleGameEvents _ g = g
 
 setPlacingTower :: Game -> Point -> GameObject -> Game
-setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} | price <= (money gs) = ( Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos}, selectedTower = "", money = (money gs) - price} } )
+setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} | price <= (money gs) = ( Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos}, selectedTower = "", money = (money gs) - price} )
 setPlacingTower g _ _ = g
 
 deleteCurrentTower :: Game -> Game
