@@ -480,12 +480,22 @@ isEnemy _ = False
 toGameCoords :: Point -> Integer -> Integer -> Point -> Point
 toGameCoords (gx, gy) w h (x, y) = (x - gx, y - gy)
 
+gameHittest :: Point -> Integer -> Integer -> Point -> Bool
+gameHittest (gx, gy) w h p = pointInBox p rightBot leftTop
+  where
+    halfW = (fromIntegral w) / 2
+    halfH = (fromIntegral h) / 2
+    leftTop = (gx-halfW,gy+halfH)
+    rightBot = (gx+halfW, gy-halfH)
+
 handleGameEvents :: Event -> Game -> Game
 handleGameEvents (EventMotion rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { placingTower = newPlacingTower })
   where
     mpos = toGameCoords (x, y) w h rpos
     newPlacingTower = maybe Nothing (\t ->Just t {position = mpos}) placingTower
-handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing, lastIndex = newIndex})
+handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w h assets gs@GameState{..})
+  | gameHittest (x,y) w h rpos = (Game (x, y) w h assets gs { objects = newObjects, selectedTower = newSelectedName, placingTower = newPlacing, lastIndex = newIndex})
+  | otherwise = Game (x, y) w h assets gs
   where
     pos = toGameCoords (x, y) w h rpos
     possibleSelect = maybe "" name $ find (\x -> gameObjectHittest x pos && isTower x) objects
