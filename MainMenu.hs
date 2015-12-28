@@ -90,18 +90,18 @@ main = do
     level5 <- toParseLevel "data/level5.txt"
     let initGame = [("Menu", GUIElem (SpecialTextButton (-0,-360) 204 50 0.3 (greyN 0.5) "Main Menu" False ([("ButtonQuit", GUIElem (IconButton (0, -120) 100 50 butQuit False)),("Button1", GUIElem (SpecialIconButton (0, 120) 90 90 level1ico False (replaceLevel initGame level1))),("Button2", GUIElem (SpecialIconButton (-130, 120) 90 90 level1ico False (replaceLevel initGame level2))), ("Button3", GUIElem (SpecialIconButton (130, 120) 90 90 level1ico False (replaceLevel initGame level3))),("Button4", GUIElem (SpecialIconButton (70, 0) 90 90 level1ico False (replaceLevel initGame level4))),("Button5", GUIElem (SpecialIconButton (-70, 0) 90 90 level1ico False (replaceLevel initGame level5)))])))
           ,("Stats", GUIElem (TextBox (-385,-360) 500 150 (greyN 0.5) 30 ["Stats:", "Wave: 1", "Health = 100", "Coins = 100"]))
-          ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1_1 False))
+          ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon3_1 False))
           ,("Tower2", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 880)), -360) 150 150 towerIcon2_1 False))
-          ,("Tower3", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1040)), -360) 150 150 towerIcon3_1 False))
+          ,("Tower3", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1040)), -360) 150 150 towerIcon1_1 False))
           ,("Update", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1455)), -322) 72 72 upgradeIcon False))
           ,("Sell", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1455)), -397) 72 72 sellIcon False))
           ,("Game", GUIElem (Game (0, 0 + (fromIntegral Config.controlPanelHeight)) (fromIntegral width) (fromIntegral height) picLib
               (GameState
                    (Level Blank [] [])
-                   1000 
+                   10
                    False
                    ""
-                   100
+                   10
                    [] 
                    Nothing
                    0)
