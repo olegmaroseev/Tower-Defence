@@ -27,10 +27,12 @@ initMainWindow = do
         towerIcon1 <- assetPic "Tower1"
         towerIcon2 <- assetPic "Tower2"
         towerIcon3 <- assetPic "Tower3"
+        bulletIcon1 <- assetPic "Bullet1"
         bacgroundPic <- assetPic "Background1"
         let picLib = (Map.fromList [("tower1", towerIcon1)
                                    ,("tower2", towerIcon2)
                                    ,("tower3", towerIcon3)
+                                   ,("bullet1", bulletIcon1)
                                    ,("Background1", bacgroundPic)
                                    ])
         runGUI 
