@@ -55,17 +55,17 @@ basicTower = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "Tower3-1",
+            render = getAsset "Tower1-1",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
-            range = 300,
+            range = 200,
             cooldown = 0.5,
             lastShot = 0,
-            power = 5,
+            power = 3,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot basicBullet)}
 
 
 basicTowerUpgrade1 :: GameObject
@@ -73,34 +73,34 @@ basicTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "Tower3-2",
+            render = getAsset "Tower1-2",
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
-            range = 500,
+            range = 250,
             cooldown = 0.3,
             lastShot = 0,
-            power = 7,
+            power = 4,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot basicBullet)}
 
 basicTowerUpgrade2 :: GameObject
 basicTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "Tower3-3", 
-            sellCost = 20, 
+            render = getAsset "Tower1-3", 
+            sellCost = 15, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
-            range = 700,
+            range = 350,
             cooldown = 0.2,
             lastShot = 0,
-            power = 10,
+            power = 5,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot basicBullet)}
 
 magicTower :: GameObject
 magicTower = Tower {
@@ -112,12 +112,12 @@ magicTower = Tower {
             upgradeCost = 10, 
             nextUpgrade = Just magicTowerUpgrade1, 
             range = 200,
-            cooldown = 0.5,
+            cooldown = 3,
             lastShot = 0,
-            power = 8,
+            power = 15,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot magicBullet)}
 
 
 magicTowerUpgrade1 :: GameObject
@@ -129,13 +129,13 @@ magicTowerUpgrade1 = Tower {
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just magicTowerUpgrade2, 
-            range = 300,
-            cooldown = 0.3,
+            range = 220,
+            cooldown = 3,
             lastShot = 0,
-            power = 10,
+            power = 20,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot magicBullet)}
 
 magicTowerUpgrade2 :: GameObject
 magicTowerUpgrade2 = Tower {
@@ -146,30 +146,30 @@ magicTowerUpgrade2 = Tower {
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
-            range = 400,
+            range = 240,
             cooldown = 0.2,
-            lastShot = 0,
-            power = 13,
+            lastShot = 3,
+            power = 25,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}            
+            update = (basicTowerShoot magicBullet)}            
 
 archerTower :: GameObject
 archerTower = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "Tower1-1",
+            render = getAsset "Tower3-1",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just archerTowerUpgrade1, 
-            range = 400,
+            range = 250,
             cooldown = 0.5,
             lastShot = 0,
             power = 2,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot archerBullet)}
 
 
 archerTowerUpgrade1 :: GameObject
@@ -177,39 +177,39 @@ archerTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "Tower1-2",
+            render = getAsset "Tower3-2",
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just archerTowerUpgrade2, 
-            range = 600,
+            range = 300,
             cooldown = 0.3,
             lastShot = 0,
             power = 4,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot}
+            update = (basicTowerShoot archerBullet)}
 
 archerTowerUpgrade2 :: GameObject
 archerTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "Tower1-3", 
+            render = getAsset "Tower3-3", 
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
-            range = 800,
+            range = 350,
             cooldown = 0.2,
             lastShot = 0,
             power = 6,
             target = "",
             bulletsCount = 0,
-            update = basicTowerShoot} 
+            update = (basicTowerShoot archerBullet)} 
             
-basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicTowerShoot t time obj =     if  target t /= "" 
+basicTowerShoot :: GameObject-> GameObject -> Float -> [GameObject] -> [GameObject]
+basicTowerShoot bType t time obj =     if  target t /= "" 
                                     && lastShot t <= 0
-                                 then sortBy (comparing objectsOrder) $ (basicBullet{name = bulletName, position = position t, target = target t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (1 + bulletsCount t)}) obj)
+                                 then sortBy (comparing objectsOrder) $ (bType{name = bulletName, position = position t, target = target t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (1 + bulletsCount t)}) obj)
                                  else
                                   if target t /= "" && isJust oldtarget then
                                     replaceGameObject (name t) t{lastShot = lastShot t - time} obj
@@ -241,6 +241,28 @@ basicBullet = Bullet {
               ,power = 1
               ,update = basicBulletUpdate
               }
+
+magicBullet :: GameObject
+magicBullet = Bullet {
+               name = ""
+              ,position = (0,0)
+              ,render = getAsset "bullet3"
+              ,speed = 50
+              ,target = ""
+              ,power = 10
+              ,update = basicBulletUpdate
+              }
+ 
+archerBullet :: GameObject
+archerBullet = Bullet {
+               name = ""
+              ,position = (0,0)
+              ,render = getAsset "bullet2"
+              ,speed = 150
+              ,target = ""
+              ,power = 1
+              ,update = basicBulletUpdate
+              } 
               
 basicBulletUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
