@@ -9,6 +9,7 @@ import GameLogic
 import Data.Maybe
 import qualified Data.Map as Map
 import Data.List
+import ParseLevel
 
 level1min = "pic/level1.bmp"
 level2min = "pic/level2.bmp"
@@ -57,7 +58,8 @@ main = do
                                ,("enemy4", enemyIcon4)
                                ,("Background1", bacgroundPic)
                                ])
-    let level1 = Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(1, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])]
+    --let level1 = Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(1, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])]
+	level1 <- toParseLevel "data/level.txt"
     let initGame = [("Menu", GUIElem (TextButton (-0,-360) 204 50 0.3 (greyN 0.5) "Main Menu" False))
           ,("Stats", GUIElem (TextBox (-385,-360) 500 150 (greyN 0.5) 30 ["Stats:", "Wave: 1", "Health = 100", "Coins = 100"]))
           ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1 False))
