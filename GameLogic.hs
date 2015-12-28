@@ -305,7 +305,7 @@ basicEnemy = Enemy {
             reward = 10,
             update=basicEnemyUpdate
             }
-			
+
 basicUpdatedEnemy :: GameObject
 basicUpdatedEnemy = Enemy {
             name="",
@@ -543,16 +543,13 @@ deleteCurrentTower (Game (x,y) w h assets gs@GameState{..})
 
 upgradeCurrentTower::Game -> Game
 upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})
-          | selectedTower /= "" && upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) 
-              = deleteCurrentTower $ Game (x,y) w h assets gs 
-                 {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)
-                 ,  objects = objects ++ [(
-                                            ( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) )
-                                               { position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , 
-                                                 name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } 
-                                          )]  
-                  }
-          | otherwise = (Game (x,y) w h assets gs)
+           | selectedTower /= "" && (isJust mselectedT) && (isJust mnewTower) && (upgradeCost selectedT) <= money = Game (x,y) w h assets gs {  money = money - upgradeCost selectedT, objects = replaceGameObject selectedTower newTower objects }
+           | otherwise = (Game (x,y) w h assets gs)
+      where
+        mselectedT = listToMaybe $ filter ((selectedTower==).name) objects
+        selectedT = fromJust mselectedT
+        mnewTower = nextUpgrade selectedT 
+        newTower = (fromJust mnewTower) { name = name selectedT, position = position selectedT }
 
 wavesLeft :: Game -> Int
 wavesLeft (Game (x,y) w h assets gs@GameState{..}) = length $ levelWaves level
