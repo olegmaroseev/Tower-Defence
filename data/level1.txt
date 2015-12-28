@@ -1,6 +1,6 @@
 pic/background.bmp
 (-550,400) (-450,300) (-490,-100) (-200,-100) (-150,-50) (-200,350) (100,350) (100,-100) (390,-100) (330,350) (600,350)
-1 basicEnemy basicEnemy strongEnemy
+1 basicEnemy basicEnemy
 5 basicEnemy basicUpdatedEnemy
 7 middleEnemy
 9 middleEnemy middleEnemy
