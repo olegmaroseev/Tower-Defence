@@ -99,30 +99,33 @@ basicTowerUpgrade2 = Tower {
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicTowerShoot t time obj =     if  target t /= "" 
                                     && lastShot t <= 0
-                                 then (basicBullet{name = bulletName, position = position t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (bulletsCount t + 1)}) obj)
+                                 then sortBy (comparing objectsOrder) $ (basicBullet{name = bulletName, position = position t, target = target t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (1 + bulletsCount t)}) obj)
                                  else
-                                  if length newTargets /= 0 then
+                                  if target t /= "" then
+                                    replaceGameObject (name t) t{lastShot = lastShot t - time} obj
+                                  else if length newTargets /= 0 then
                                      replaceGameObject (name t) newTower obj
                                   else 
                                     replaceGameObject (name t) (t{lastShot = lastShot t - time}) obj
                                       where
-                                        newTargets = filter (findTarget (fst $ position t) (snd $ position t) (range t)) obj
-                                        newTower = t{target = (name $ head newTargets), lastShot = lastShot t - time}
+                                        newTargets = sortBy (comparing snd) $ filter (\(_, d) -> d>=0 && d<=range t) $ map (mapDistance (fst $ position t) (snd $ position t)) obj
+                                        newTower = t{target = (fst $ head newTargets), lastShot = lastShot t - time}
                                         bulletName = name t ++ (show $ bulletsCount t) ++ target t
                                  
-findTarget :: Float -> Float -> Float -> GameObject -> Bool                               
-findTarget x y r t = dist <= r
+mapDistance :: Float -> Float -> GameObject -> (String, Float)                               
+mapDistance x y t@Enemy{..} = (name, dist)
                                 where
-                                  dx = x - (fst (position t))
-                                  dy = y - (snd (position t))
+                                  dx = x - (fst position)
+                                  dy = y - (snd position)
                                   dist = sqrt (dx*dx + dy*dy)
+mapDistance _ _ _ = ("", -1)
 
 basicBullet :: GameObject
 basicBullet = Bullet {
                name = ""
               ,position = (0,0)
               ,render = getAsset "bullet1"
-              ,speed = 10
+              ,speed = 100
               ,target = ""
               ,power = 1
               ,update = basicBulletUpdate
@@ -136,7 +139,6 @@ basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
                                         replaceGameObject (name shEn) (shEn{hitpoints = hitpoints shEn - power b}) delBullet
                                     else
                                         delBullet
-                                    
                             where
                              mB = moveBullet time b objs
                              shooted = (targetShooted b objs)
@@ -145,34 +147,29 @@ basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
 
 targetShooted :: GameObject -> [GameObject] -> Maybe GameObject
 targetShooted b@Bullet{..} objs
-       | null target = Nothing
-       | dist <= speed = Just foundTarget
+       | isJust mTarget && dist <= speed = mTarget
+       | otherwise = Nothing
            where
             (bx, by) = position
-            (tx, ty) = getPos foundTarget
+            (tx, ty) = getPos $ fromJust mTarget
             dx = tx - bx
             dy = ty - by
             dist = sqrt (dx*dx + dy*dy)
-            foundTarget = head findTargets
-            findTargets = filter (\x -> target == getName x) objs
+            mTarget = find (\x -> target == getName x) objs
 
 moveBullet :: Float -> GameObject -> [GameObject] -> Maybe GameObject
 moveBullet delta b@Bullet{..} objs
   | null target = Nothing
-  | otherwise = if length findTargets /= 0 then
-                    Just movedBullet
-                else
-                    Nothing
+  | otherwise = maybe Nothing (const (Just movedBullet)) mTarget
   where
     (bx, by) = position
-    (tx, ty) = getPos foundTarget
+    (tx, ty) = getPos $ fromJust mTarget
     dx = tx - bx
     dy = ty - by
     dist = sqrt (dx*dx + dy*dy)
     dir = atan2 dy dx
     movedBullet = b { position = (bx + speed * delta * cos dir, by + speed * delta * sin dir) } 
-    foundTarget = head findTargets
-    findTargets = filter (\x -> target == getName x) objs
+    mTarget = find (\x -> target == getName x) objs
 
 getName :: GameObject -> String
 getName = name
