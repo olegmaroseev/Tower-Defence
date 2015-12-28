@@ -18,6 +18,12 @@ level4min = "pic/level4.bmp"
 level5min = "pic/level5.bmp"
 butQuitMin = "pic/but.bmp"
 
+lev1path = "data/level1.txt"
+lev2path = "data/level2.txt"
+lev3path = "data/level3.txt"
+lev4path = "data/level4.txt"
+lev5path = "data/level5.txt"
+
 assetPic :: String -> IO Picture
 assetPic picName = do
         let path = snd $ head $ filter (\(s, p) -> s == picName) picBase
