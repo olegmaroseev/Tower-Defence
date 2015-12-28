@@ -40,6 +40,10 @@ replaceLevel els l = map update els
 main :: IO()
 main = do 
     level1ico@(Bitmap _ _ _ _) <- loadBMP level1min
+    level2ico@(Bitmap _ _ _ _) <- loadBMP level2min
+    level3ico@(Bitmap _ _ _ _) <- loadBMP level3min
+    level4ico@(Bitmap _ _ _ _) <- loadBMP level4min
+    level5ico@(Bitmap _ _ _ _) <- loadBMP level5min
     butQuit@(Bitmap _ _ _ _) <- loadBMP butQuitMin
     towerIcon1_1 <- assetPic "Tower1-1"
     towerIcon1_2 <- assetPic "Tower1-2"
@@ -104,7 +108,7 @@ main = do
             )
            )
          ]
-    let initMainMenu = [("ButtonQuit", GUIElem (IconButton (0, -120) 100 50 butQuit False)),("Button1", GUIElem (SpecialIconButton (0, 120) 90 90 level1ico False (replaceLevel initGame level1))),("Button2", GUIElem (SpecialIconButton (-130, 120) 90 90 level1ico False (replaceLevel initGame level2))), ("Button3", GUIElem (SpecialIconButton (130, 120) 90 90 level1ico False (replaceLevel initGame level3))),("Button4", GUIElem (SpecialIconButton (70, 0) 90 90 level1ico False (replaceLevel initGame level4))),("Button5", GUIElem (SpecialIconButton (-70, 0) 90 90 level1ico False (replaceLevel initGame level5)))]
+    let initMainMenu = [("ButtonQuit", GUIElem (IconButton (0, -120) 100 50 butQuit False)),("Button1", GUIElem (SpecialIconButton (0, 120) 90 90 level2ico False (replaceLevel initGame level2))),("Button2", GUIElem (SpecialIconButton (-130, 120) 90 90 level1ico False (replaceLevel initGame level1))), ("Button3", GUIElem (SpecialIconButton (130, 120) 90 90 level3ico False (replaceLevel initGame level3))),("Button4", GUIElem (SpecialIconButton (70, 0) 90 90 level5ico False (replaceLevel initGame level5))),("Button5", GUIElem (SpecialIconButton (-70, 0) 90 90 level4ico False (replaceLevel initGame level4)))]
     runGUI (InWindow "Tower Defence" 
           (width, (height + (controlPanelHeight * 2) + menuPanelHeight))
           (100,  100))
