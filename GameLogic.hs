@@ -316,7 +316,21 @@ basicUpdatedEnemy = Enemy {
             hitpoints=20,
             maxHitpoints=20,
             power=3,
-            reward = 10,
+            reward = 15,
+            update=basicEnemyUpdate
+            }
+			
+middleEnemy :: GameObject
+middleEnemy = Enemy {
+            name="",
+            position=(0,0), 
+            render = renderBasicEnemy "enemy3",--"enemy2",
+            path=[],
+            speed=100,
+            hitpoints=30,
+            maxHitpoints=30,
+            power=4,
+            reward = 20,
             update=basicEnemyUpdate
             }
 
