@@ -55,7 +55,7 @@ basicTower = Tower {
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
-            range = 100,
+            range = 300,
             cooldown = 5,
             lastShot = 0,
             power = 5,
@@ -72,7 +72,7 @@ basicTowerUpgrade1 = Tower {
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
-            range = 150,
+            range = 500,
             cooldown = 3,
             lastShot = 0,
             power = 7,
@@ -88,8 +88,8 @@ basicTowerUpgrade2 = Tower {
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
-            range = 200,
-            cooldown = 50,
+            range = 700,
+            cooldown = 1,
             lastShot = 0,
             power = 10,
             target = "",
@@ -306,12 +306,12 @@ updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h as
     individualUpdates = updateObjects delta objects
     (ne, nw) = updateWaves delta $ levelWaves level
     lpath = map (toGameCoords (x,y) w h) (levelPath level)
-    newName = show lastIndex
+    newName = "Enemy" ++ show lastIndex
     newIndex
       | isJust ne = lastIndex + 1
       | otherwise = lastIndex
     afterSpawn = case ne of
-                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e (show newIndex) lpath) : individualUpdates
+                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e newName lpath) : individualUpdates
                 Nothing -> individualUpdates
     (livesDelta, afterDeath) = getFinishedEnemies afterSpawn
     globalUpdates = afterDeath 
