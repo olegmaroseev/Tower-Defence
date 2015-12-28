@@ -64,6 +64,15 @@ data IconButton = IconButton Point   --centerPoint
                              Picture --icon
                              Bool -- Highlighted
                              deriving (Show, Typeable)
+                             
+
+data SpecialIconButton a = SpecialIconButton Point   --centerPoint
+                             Integer --width
+                             Integer --height
+                             Picture --icon
+                             Bool -- Highlighted
+                             a
+                             deriving (Show, Typeable)
 
 data TextBox = TextBox Point   --centerPoint
                        Integer --width
@@ -98,6 +107,14 @@ instance GUIObject IconButton where
     | otherwise = tb
   eventHandler _ o = o
 
+instance GUIObject (SpecialIconButton a) where
+  renderObject = renderSIButton
+  eventHandler (EventMotion ep) tb@(SpecialIconButton p w h t hl a)
+    | (not hl) && contains p (w,h) ep = SpecialIconButton p w h t True a
+    | hl && (not $ contains p (w,h) ep) = SpecialIconButton p w h t False a
+    | otherwise = tb
+  eventHandler _ o = o
+  
 instance GUIObject TextBox where
   renderObject = renderTextBox
   
@@ -129,6 +146,18 @@ renderTButton (TextButton (x, y) w h sc c txtStr hl) =
     
 renderIButton :: IconButton -> Picture
 renderIButton (IconButton (x, y) w h icon hl) = do
+     let halfW = fromIntegral w / 2
+         halfH = fromIntegral h / 2
+     Pictures $ [Translate x y $ scale 1 1 icon] ++ (if hl then
+                                     [Translate x y $ Color (makeColor 1 1 1 0.5) $ 
+                                       Polygon [(-halfW, -halfH), 
+                                                (halfW, -halfH), 
+                                                (halfW, halfH), 
+                                                (-halfW, halfH)]]
+                                        else [])
+                                        
+renderSIButton :: SpecialIconButton a -> Picture
+renderSIButton (SpecialIconButton (x, y) w h icon hl _) = do
      let halfW = fromIntegral w / 2
          halfH = fromIntegral h / 2
      Pictures $ [Translate x y $ scale 1 1 icon] ++ (if hl then
