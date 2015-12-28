@@ -509,7 +509,8 @@ setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} | price <= (money gs)
 setPlacingTower g _ _ = g
 
 deleteCurrentTower :: Game -> Game
-deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (name x) /= (selectedTower)) (objects) ) , money = money + sellCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) }
+deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (getName x) /= (selectedTower)) (objects) ) , 
+                                                                                          money = money + sellCost ( head (filter (\x -> (getName x) == (selectedTower)) (objects))) }
 
 upgradeCurrentTower::Game -> Game
 upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})

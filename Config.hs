@@ -11,6 +11,8 @@ picBase = [("Tower1", "pic/tower1.bmp")
           ,("Bullet1", "pic/bullet1.bmp")
           ,("Bullet2", "pic/bullet2.bmp")
           ,("Bullet3", "pic/bullet3.bmp")
+          ,("Upgrade", "pic/upgrade.bmp")
+          ,("Sell", "pic/sell.bmp")
           ]
 
 --Main Window params
