@@ -68,6 +68,10 @@ main = do
                                ])
     --let level1 = Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(1, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])]
     level1 <- toParseLevel "data/level1.txt"
+    level2 <- toParseLevel "data/level2.txt"
+    level3 <- toParseLevel "data/level3.txt"
+    level4 <- toParseLevel "data/level4.txt"
+    level5 <- toParseLevel "data/level5.txt"
     let initGame = [("Menu", GUIElem (TextButton (-0,-360) 204 50 0.3 (greyN 0.5) "Main Menu" False))
           ,("Stats", GUIElem (TextBox (-385,-360) 500 150 (greyN 0.5) 30 ["Stats:", "Wave: 1", "Health = 100", "Coins = 100"]))
           ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1 False))
@@ -89,7 +93,7 @@ main = do
             )
            )
          ]
-    let initMainMenu = [("ButtonQuit", GUIElem (IconButton (0, -120) 100 50 butQuit False)),("Button1", GUIElem (SpecialIconButton (0, 120) 90 90 level1ico False (replaceLevel initGame level1))),("Button2", GUIElem (IconButton (-130, 120) 90 90 level1ico False)), ("Button3", GUIElem (IconButton (130, 120) 90 90 level1ico False)),("Button4", GUIElem (IconButton (70, 0) 90 90 level1ico False)),("Button5", GUIElem (IconButton (-70, 0) 90 90 level1ico False))]
+    let initMainMenu = [("ButtonQuit", GUIElem (IconButton (0, -120) 100 50 butQuit False)),("Button1", GUIElem (SpecialIconButton (0, 120) 90 90 level1ico False (replaceLevel initGame level1))),("Button2", GUIElem (SpecialIconButton (-130, 120) 90 90 level1ico False (replaceLevel initGame level2))), ("Button3", GUIElem (SpecialIconButton (130, 120) 90 90 level1ico False (replaceLevel initGame level3))),("Button4", GUIElem (SpecialIconButton (70, 0) 90 90 level1ico False (replaceLevel initGame level4))),("Button5", GUIElem (SpecialIconButton (-70, 0) 90 90 level1ico False (replaceLevel initGame level5)))]
     runGUI (InWindow "Tower Defence" 
           (width, (height + (controlPanelHeight * 2) + menuPanelHeight))
           (100,  100))
