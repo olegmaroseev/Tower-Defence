@@ -51,6 +51,8 @@ main = do
     bulletIcon1 <- assetPic "Bullet1"
     bulletIcon2 <- assetPic "Bullet2"
     bulletIcon3 <- assetPic "Bullet3"
+    upgradeIcon <- assetPic "Upgrade"
+    sellIcon <- assetPic "Sell"
     bacgroundPic <- assetPic "Background1"
     let picLib = (Map.fromList [("tower1", towerIcon1)
                                ,("tower2", towerIcon2)
@@ -71,6 +73,8 @@ main = do
           ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1 False))
           ,("Tower2", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 880)), -360) 150 150 towerIcon2 False))
           ,("Tower3", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1040)), -360) 150 150 towerIcon3 False))
+          ,("Update", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1455)), -322) 72 72 upgradeIcon False))
+          ,("Sell", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1455)), -397) 72 72 sellIcon False))
           ,("Game", GUIElem (Game (0, 0 + (fromIntegral Config.controlPanelHeight)) (fromIntegral width) (fromIntegral height) picLib
               (GameState
                    (Level Blank [] [])
@@ -100,7 +104,11 @@ main = do
       where
         update ("Game",a ) | Just g <- unpackCast a =
                  case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
-                                  "None" -> ("Game", a)
+                                  "Tower2" -> ("Game", GUIElem $ setPlacingTower g pos magicTower)
+                                  "Tower3" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
+                                  "Update" -> ("Game", GUIElem $ upgradeCurrentTower g)
+                                  "Sell" -> ("Game", GUIElem $ deleteCurrentTower g)
+                                  _ -> ("Game", a)
         update other = other
         clickedSpecial = foldl stSpecial Nothing xs
         stSpecial acc cur = if isJust checked then checked else acc
