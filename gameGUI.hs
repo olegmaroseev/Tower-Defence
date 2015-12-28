@@ -90,16 +90,14 @@ handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
                               "Tower3" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
                               "Update" -> ("Game", GUIElem $ upgradeCurrentTower g)
                               "Sell" -> ("Game", GUIElem $ deleteCurrentTower g)
-                              "None" -> ("Game", a)
+                              _ -> ("Game", a)
     update other = other
-    
     clickedB = foldl st "None" xs
     st acc cur = if checked then (fst cur) else acc
       where
         checked = case unpackCast (snd cur) of 
           Just (IconButton (x, y) w h icon hl) -> hl
-          Nothing -> False
-        
+          _ -> False
 handleEvents _ xs = xs
 
 updateObjects :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]

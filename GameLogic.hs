@@ -509,12 +509,13 @@ setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} | price <= (money gs)
 setPlacingTower g _ _ = g
 
 deleteCurrentTower :: Game -> Game
-deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) =  Game (x,y) w h assets gs { objects = (filter (\x -> (getName x) /= (selectedTower)) (objects) ) , 
+deleteCurrentTower (Game (x,y) w h assets gs@GameState{..}) 
+  |selectedTower /= "" = Game (x,y) w h assets gs { objects = (filter (\x -> (getName x) /= (selectedTower)) (objects) ) , 
                                                                                           money = money + sellCost ( head (filter (\x -> (getName x) == (selectedTower)) (objects))) }
-
+  | otherwise = (Game (x,y) w h assets gs)
 upgradeCurrentTower::Game -> Game
 upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})
-          | upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
+          | selectedTower /= "" && upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
           | otherwise = (Game (x,y) w h assets gs)
 
 
