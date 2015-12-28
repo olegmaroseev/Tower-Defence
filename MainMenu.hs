@@ -94,7 +94,6 @@ main = do
           ,("Game", GUIElem (Game (0, 0 + (fromIntegral Config.controlPanelHeight)) (fromIntegral width) (fromIntegral height) picLib
               (GameState
                    (Level Blank [] [])
-                   []
                    1000 
                    False
                    ""
