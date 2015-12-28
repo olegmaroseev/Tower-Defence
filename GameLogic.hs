@@ -319,7 +319,7 @@ basicUpdatedEnemy = Enemy {
             reward = 15,
             update=basicEnemyUpdate
             }
-			
+
 middleEnemy :: GameObject
 middleEnemy = Enemy {
             name="",
