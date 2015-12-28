@@ -88,7 +88,7 @@ basicTowerUpgrade2 :: GameObject
 basicTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
-			price = 5,
+            price = 5,
             render = getAsset "tower1", 
             sellCost = 20, 
             upgradeCost = 0, 
