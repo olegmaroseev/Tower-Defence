@@ -84,7 +84,7 @@ main = do
     level3 <- toParseLevel "data/level3.txt"
     level4 <- toParseLevel "data/level4.txt"
     level5 <- toParseLevel "data/level5.txt"
-    let initGame = [("Menu", GUIElem (TextButton (-0,-360) 204 50 0.3 (greyN 0.5) "Main Menu" False))
+    let initGame = [("Menu", GUIElem (SpecialTextButton (-0,-360) 204 50 0.3 (greyN 0.5) "Main Menu" False ([("ButtonQuit", GUIElem (IconButton (0, -120) 100 50 butQuit False)),("Button1", GUIElem (SpecialIconButton (0, 120) 90 90 level1ico False (replaceLevel initGame level1))),("Button2", GUIElem (SpecialIconButton (-130, 120) 90 90 level1ico False (replaceLevel initGame level2))), ("Button3", GUIElem (SpecialIconButton (130, 120) 90 90 level1ico False (replaceLevel initGame level3))),("Button4", GUIElem (SpecialIconButton (70, 0) 90 90 level1ico False (replaceLevel initGame level4))),("Button5", GUIElem (SpecialIconButton (-70, 0) 90 90 level1ico False (replaceLevel initGame level5)))])))
           ,("Stats", GUIElem (TextBox (-385,-360) 500 150 (greyN 0.5) 30 ["Stats:", "Wave: 1", "Health = 100", "Coins = 100"]))
           ,("Tower1", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 720)), -360) 150 150 towerIcon1_1 False))
           ,("Tower2", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 880)), -360) 150 150 towerIcon2_1 False))
@@ -112,38 +112,47 @@ main = do
           60
           initMainMenu
           handleEvents
-          updateObjects
+          Main.updateObjects
+
+handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
+handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = if isJust clickedSpecial then (fromJust clickedSpecial) else map update xs
   where
-    handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
-    handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = if isJust clickedSpecial then (fromJust clickedSpecial) else map update xs
+    update ("Game",a ) | Just g <- unpackCast a =
+             case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
+                              "Tower2" -> ("Game", GUIElem $ setPlacingTower g pos magicTower)
+                              "Tower3" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
+                              "Update" -> ("Game", GUIElem $ upgradeCurrentTower g)
+                              "Sell" -> ("Game", GUIElem $ deleteCurrentTower g)
+                              _ -> ("Game", a)
+    update other = other
+    clickedSpecial = foldl stSpecial Nothing xs
+    stSpecial acc cur = if isJust checked then checked else acc
       where
-        update ("Game",a ) | Just g <- unpackCast a =
-                 case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
-                                  "Tower2" -> ("Game", GUIElem $ setPlacingTower g pos magicTower)
-                                  "Tower3" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
-                                  "Update" -> ("Game", GUIElem $ upgradeCurrentTower g)
-                                  "Sell" -> ("Game", GUIElem $ deleteCurrentTower g)
-                                  _ -> ("Game", a)
-        update other = other
-        clickedSpecial = foldl stSpecial Nothing xs
-        stSpecial acc cur = if isJust checked then checked else acc
-          where
-            checked = case unpackCast (snd cur) of 
-              Just (SpecialIconButton (x, y) w h icon hl it) -> if hl then Just it else Nothing
-              Nothing -> Nothing
-        clickedB = foldl st "None" xs
-        st acc cur = if checked then (fst cur) else acc
-          where
-            checked = case unpackCast (snd cur) of 
-              Just (IconButton (x, y) w h icon hl) -> hl
-              Nothing -> False
-    handleEvents _ xs = xs
-    updateObjects :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
-    updateObjects time objs = map update objs
+        checked = case unpackCast (snd cur) of 
+          Just (SpecialIconButton (x, y) w h icon hl it) -> if hl then Just it else Nothing
+          Nothing -> case unpackCast (snd cur) of 
+                        Just (SpecialTextButton (x, y) w h sf clr txt hl it) -> if hl then Just it else Nothing
+                        Nothing -> Nothing
+    clickedB = foldl st "None" xs
+    st acc cur = if checked then (fst cur) else acc
       where
-        update ("Stats", _) = ("Stats", GUIElem $ (TextBox (-385,-360) 500 150 (greyN 0.5) 30 (["Stats:"] ++ info)))
-                where
-                  curObj = snd $ fromJust $ find (\(n, ob)-> n == "Game") objs
-                  Just game@(Game (x, y) w h assets GameState{..}) = unpackCast curObj
-                  info = ["Coins: " ++ (show money), "Life: " ++ (show lives)]
-        update other = other
+        checked = case unpackCast (snd cur) of 
+          Just (IconButton (x, y) w h icon hl) -> hl
+          Nothing -> False
+handleEvents _ xs = xs
+
+updateObjects :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
+updateObjects time objs = map update newObjs
+  where
+    newObjs = maybe objs (\g -> if  (gameResult g) /= Playing then (newGO g) else objs) $ (lookup "Game" objs) >>= unpackCast
+              where
+                newGO g = nobjs ++ [("EndText", GUIElem $ TextBox (0, 0) 500 100 (greyN 0.5) 20 ["Game over!" , "You " ++ (show $ gameResult g)])]
+                nobjs = map st objs
+                st ("Game", a) | Just g <- unpackCast a = ("Game", GUIElem $ pauseGame True g)
+                st a = a
+    update ("Stats", _) = ("Stats", GUIElem $ (TextBox (-385,-360) 500 150 (greyN 0.5) 30 (["Stats:"] ++ info)))
+            where
+              curObj = snd $ fromJust $ find (\(n, ob)-> n == "Game") objs
+              Just game@(Game (x, y) w h assets GameState{..}) = unpackCast curObj
+              info = ["Waves left: " ++ show (wavesLeft game), "Coins: " ++ (show money), "Life: " ++ (show lives)]
+    update other = other
