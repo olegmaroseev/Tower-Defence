@@ -155,9 +155,38 @@ updateObjects time objs = map update newObjs
                 nobjs = map st objs
                 st ("Game", a) | Just g <- unpackCast a = ("Game", GUIElem $ pauseGame True g)
                 st a = a
-    update ("Stats", _) = ("Stats", GUIElem $ (TextBox (-385,-360) 500 150 (greyN 0.5) 30 (["Stats:"] ++ info)))
+    update ("Stats", _) = ("Stats", GUIElem $ (TextBox (-385,-360) 500 150 (greyN 0.5) 30 (info ++ ["" ++ p1 ++ p2 ++ p3 ++ p4 ++ p5] )))
             where
               curObj = snd $ fromJust $ find (\(n, ob)-> n == "Game") objs
               Just game@(Game (x, y) w h assets GameState{..}) = unpackCast curObj
+              
+              curTower1Obj = snd $ fromJust $ find (\(n, ob)->  n == "Tower1") objs
+              Just button1@(IconButton (_,_) _ _ _ hl1) = unpackCast curTower1Obj
+              p1 = if hl1 then "Build price: " ++ (show $ price basicTower) else ""
+              
+              curTower2Obj = snd $ fromJust $ find (\(n, ob)->  n == "Tower2") objs
+              Just button2@(IconButton (_,_) _ _ _ hl2) = unpackCast curTower2Obj
+              p2 = if hl2 then "Build price: " ++ (show $ price magicTower) else ""
+              
+              curTower3Obj = snd $ fromJust $ find (\(n, ob)->  n == "Tower3") objs
+              Just button3@(IconButton (_,_) _ _ _ hl3) = unpackCast curTower3Obj
+              p3 = if hl3 then "Build price: " ++ (show $ price magicTower) else ""
+              p4 = ""
+              p5 = ""
+              {-
+              
+              p4 = if (length objects /= 0) && hl4 then "Update price: " ++ (show $ price) else ""
+                  where
+                    price = upgradeCost $ head (filter (\x -> (getName x) == (selectedTower)) (objects))
+                    curUpdateObj = snd $ fromJust $ find (\(n, ob)->  n == "Update") objs
+                    Just button4@(IconButton (_,_) _ _ _ hl4) = unpackCast curUpdateObj
+              
+              p5 = if (length objects /= 0) && hl5 then "Sell price: " ++ (show $ price) else ""
+                  where
+                    price = sellCost $ head (filter (\x -> (getName x) == (selectedTower)) (objects))
+                    curSellObj = snd $ fromJust $ find (\(n, ob)->  n == "Sell") objs
+                    Just button5@(IconButton (_,_) _ _ _ hl5) = unpackCast curSellObj
+              -}
+              
               info = ["Waves left: " ++ show (wavesLeft game), "Coins: " ++ (show money), "Life: " ++ (show lives)]
     update other = other
