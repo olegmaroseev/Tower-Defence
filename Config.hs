@@ -24,4 +24,3 @@ hpHalfWidth = 100 :: Float
 hpHalfHeight = 10 :: Float
 hpTranslate = -50 :: Float
 hpMargin = 2 :: Float
-towerRadius = 40 :: Float

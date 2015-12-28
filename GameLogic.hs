@@ -258,7 +258,7 @@ basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
 
 targetShooted :: GameObject -> [GameObject] -> Maybe GameObject
 targetShooted b@Bullet{..} objs
-       | isJust mTarget && dist <= Config.towerRadius = mTarget
+       | isJust mTarget && dist <= speed = mTarget
        | otherwise = Nothing
            where
             (bx, by) = position
@@ -467,7 +467,7 @@ distance (x1, y1) (x2, y2) = let dx = x2 - x1
                                  dy = y2 - y1 in sqrt (dx * dx + dy * dy)
 
 gameObjectHittest :: GameObject -> Point -> Bool
-gameObjectHittest t p = Config.towerRadius > distance p (position t)
+gameObjectHittest t p = 20 > distance p (position t)
 
 isTower :: GameObject -> Bool
 isTower Tower{..} = True
@@ -525,13 +525,9 @@ deleteCurrentTower (Game (x,y) w h assets gs@GameState{..})
   | otherwise = (Game (x,y) w h assets gs)
 upgradeCurrentTower::Game -> Game
 upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})
-          | selectedTower /= "" && (isJust mselectedT) && (isJust mnewTower) && (upgradeCost selectedT) <= money = Game (x,y) w h assets gs {  money = money - upgradeCost selectedT, objects = replaceGameObject selectedTower newTower objects }
+          | selectedTower /= "" && upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
           | otherwise = (Game (x,y) w h assets gs)
-  where
-    mselectedT = listToMaybe $ filter ((selectedTower==).name) objects
-    selectedT = fromJust mselectedT
-    mnewTower = nextUpgrade selectedT 
-    newTower = (fromJust mnewTower) { name = name selectedT, position = position selectedT }
+
 
 --TODO: pausing game
 
