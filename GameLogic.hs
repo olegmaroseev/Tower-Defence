@@ -350,7 +350,7 @@ updateWave dt (spawn, e : es)
   | otherwise = (Just e, (1, es) )  
     
 --TODO: Check if tower is on the path or collides with other towers
-isPlacementCorrect :: Point -> GameState -> Bool
+isPlacementCorrect :: Float -> Float -> Integer -> Integer -> Point -> GameState -> Bool
 isPlacementCorrect x y w h pos gs@GameState{..} = (not $ pathCollision (map (toGameCoords (x,y) w h) (levelPath level)) pos)
 
 pathCollision (x:y:[]) p = (pointInBox p x y)
