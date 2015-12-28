@@ -129,7 +129,7 @@ main = do
         stSpecial acc cur = if isJust checked then checked else acc
           where
             checked = case unpackCast (snd cur) of 
-              Just (SpecialIconButton (x, y) w h icon hl it) -> Just it
+              Just (SpecialIconButton (x, y) w h icon hl it) -> if hl then Just it else Nothing
               Nothing -> Nothing
         clickedB = foldl st "None" xs
         st acc cur = if checked then (fst cur) else acc
