@@ -348,7 +348,7 @@ updateWave dt (spawn, e : es)
     
 --TODO: Check if tower is on the path or collides with other towers
 isPlacementCorrect :: Point -> GameState -> Bool
-isPlacementCorrect pos gs@GameState{..} = (not $ pathCollision (levelPath level) pos)
+isPlacementCorrect x y w h pos gs@GameState{..} = (not $ pathCollision (map (toGameCoords (x,y) w h) (levelPath level)) pos)
 
 pathCollision (x:y:[]) p = (pointInBox p x y)
 pathCollision (x:y:xs) p = (pointInBox p x y) || pathCollision (y:xs) p
@@ -382,7 +382,7 @@ handleGameEvents (EventKey (MouseButton LeftButton) Down _ rpos) (Game (x, y) w 
     possibleSelect = maybe "" name $ find (\x -> gameObjectHittest x pos && isTower x) objects
     newSelectedName = if isJust placingTower then selectedTower else possibleSelect
     newName = show lastIndex
-    placeTower = isPlacementCorrect pos gs && isJust placingTower
+    placeTower = isPlacementCorrect x y w h pos gs && isJust placingTower
     newIndex
       | placeTower = lastIndex + 1
       | otherwise = lastIndex
