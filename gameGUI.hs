@@ -33,11 +33,15 @@ initMainWindow = do
         enemyIcon3 <- assetPic "Enemy3"
         enemyIcon4 <- assetPic "Enemy4"
         bulletIcon1 <- assetPic "Bullet1"
+        bulletIcon2 <- assetPic "Bullet2"
+        bulletIcon3 <- assetPic "Bullet3"
         bacgroundPic <- assetPic "Background1"
         let picLib = (Map.fromList [("tower1", towerIcon1)
                                    ,("tower2", towerIcon2)
                                    ,("tower3", towerIcon3)
                                    ,("bullet1", bulletIcon1)
+                                   ,("bullet2", bulletIcon2)
+                                   ,("bullet3", bulletIcon3)
                                    ,("enemy1", enemyIcon1)
                                    ,("enemy2", enemyIcon2)
                                    ,("enemy3", enemyIcon3)
@@ -77,7 +81,9 @@ handleEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
 handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
   where
     update ("Game",a ) | Just g <- unpackCast a =
-             case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
+             case clickedB of "Tower1" -> ("Game", GUIElem $ setPlacingTower g pos archerTower)
+                              "Tower2" -> ("Game", GUIElem $ setPlacingTower g pos magicTower)
+                              "Tower3" -> ("Game", GUIElem $ setPlacingTower g pos basicTower)
                               "None" -> ("Game", a)
     update other = other
     
