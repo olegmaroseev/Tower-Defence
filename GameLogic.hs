@@ -55,7 +55,7 @@ basicTower = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower1",
+            render = getAsset "tower3",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
@@ -101,6 +101,110 @@ basicTowerUpgrade2 = Tower {
             target = "",
             bulletsCount = 0,
             update = basicTowerShoot}
+
+magicTower :: GameObject
+magicTower = Tower {
+            name = "",
+            position = (0,0), 
+            price = 5,
+            render = getAsset "tower2",
+            sellCost = 5, 
+            upgradeCost = 10, 
+            nextUpgrade = Just basicTowerUpgrade1, 
+            range = 200,
+            cooldown = 0.5,
+            lastShot = 0,
+            power = 8,
+            target = "",
+            bulletsCount = 0,
+            update = basicTowerShoot}
+
+
+magicTowerUpgrade1 :: GameObject
+magicTowerUpgrade1 = Tower {
+            name = "",
+            position = (0,0), 
+            price = 5,
+            render = getAsset "tower2",
+            sellCost = 10, 
+            upgradeCost = 20, 
+            nextUpgrade = Just basicTowerUpgrade2, 
+            range = 300,
+            cooldown = 0.3,
+            lastShot = 0,
+            power = 10,
+            target = "",
+            bulletsCount = 0,
+            update = basicTowerShoot}
+
+magicTowerUpgrade2 :: GameObject
+magicTowerUpgrade2 = Tower {
+            name = "",
+            position = (0,0), 
+            price = 5,
+            render = getAsset "tower2", 
+            sellCost = 20, 
+            upgradeCost = 0, 
+            nextUpgrade = Nothing, 
+            range = 400,
+            cooldown = 0.2,
+            lastShot = 0,
+            power = 13,
+            target = "",
+            bulletsCount = 0,
+            update = basicTowerShoot}            
+
+archerTower :: GameObject
+archerTower = Tower {
+            name = "",
+            position = (0,0), 
+            price = 5,
+            render = getAsset "tower1",
+            sellCost = 5, 
+            upgradeCost = 10, 
+            nextUpgrade = Just basicTowerUpgrade1, 
+            range = 400,
+            cooldown = 0.5,
+            lastShot = 0,
+            power = 2,
+            target = "",
+            bulletsCount = 0,
+            update = basicTowerShoot}
+
+
+archerTowerUpgrade1 :: GameObject
+archerTowerUpgrade1 = Tower {
+            name = "",
+            position = (0,0), 
+            price = 5,
+            render = getAsset "tower3",
+            sellCost = 10, 
+            upgradeCost = 20, 
+            nextUpgrade = Just basicTowerUpgrade2, 
+            range = 600,
+            cooldown = 0.3,
+            lastShot = 0,
+            power = 4,
+            target = "",
+            bulletsCount = 0,
+            update = basicTowerShoot}
+
+archerTowerUpgrade2 :: GameObject
+archerTowerUpgrade2 = Tower {
+            name = "",
+            position = (0,0), 
+            price = 5,
+            render = getAsset "tower3", 
+            sellCost = 20, 
+            upgradeCost = 0, 
+            nextUpgrade = Nothing, 
+            range = 800,
+            cooldown = 0.2,
+            lastShot = 0,
+            power = 6,
+            target = "",
+            bulletsCount = 0,
+            update = basicTowerShoot} 
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicTowerShoot t time obj =     if  target t /= "" 
@@ -350,11 +454,13 @@ updateWave dt (spawn, e : es)
   | otherwise = (Just e, (1, es) )  
     
 --TODO: Check if tower is on the path or collides with other towers
-isPlacementCorrect :: Float -> Float -> Integer -> Integer -> Point -> GameState -> Bool
-isPlacementCorrect x y w h pos gs@GameState{..} = (not $ pathCollision (map (toGameCoords (x,y) w h) (levelPath level)) pos)
+isPlacementCorrect x y w h pos gs@GameState{..} = (not $ pathCollision (map (toGameCoords (x,y) w h) (levelPath level)) pos) && (not $ towerCollision (map (position) objects) pos) && (not $ pointInBox pos ((fromIntegral w) / 2,-(fromIntegral h) / 2) (-(fromIntegral w) / 2, -300))
 
 pathCollision (x:y:[]) p = (pointInBox p x y)
 pathCollision (x:y:xs) p = (pointInBox p x y) || pathCollision (y:xs) p
+
+towerCollision ((x,y):[]) p = (pointInBox p (x-70,y-70) (x+70, y+70))
+towerCollision ((x,y):z) p = (pointInBox p (x-70,y-70) (x+70, y+70)) || towerCollision z p
 
 distance :: Point -> Point -> Float
 distance (x1, y1) (x2, y2) = let dx = x2 - x1 
