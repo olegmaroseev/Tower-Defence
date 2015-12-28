@@ -110,6 +110,7 @@ main = do
           (100,  100))
           (greyN 0.25) 
           60
+          (WindowParams width (height + (controlPanelHeight * 2) + menuPanelHeight) 1 1)
           initMainMenu
           handleEvents
           Main.updateObjects

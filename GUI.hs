@@ -27,17 +27,27 @@ instance GUIObject GUIElem where
   updateObject time (GUIElem a) = GUIElem $ updateObject time a
   eventHandler event (GUIElem a) = GUIElem $ eventHandler event a
 
-runGUI :: Display -> Color -> Int -> [(String, GUIElem)] ->
+data WindowParams = WindowParams { windowWidth::Int, windowHeight::Int, scaleWidth::Float, scaleHeight::Float }
+  
+runGUI :: Display -> Color -> Int -> WindowParams -> [(String, GUIElem)] ->
                           (Event -> [(String, GUIElem)] -> [(String, GUIElem)]) -> 
                           (Float -> [(String, GUIElem)] -> [(String, GUIElem)]) -> IO ()
-runGUI display backColor simResolution
+runGUI display backColor simResolution wp
         objects handleEvents updateWorld = 
-        play display backColor simResolution objects renderGUI
-        (\event -> (handleEvents event). (handleGUIEvents event))
-        (\time -> (updateWorld time) . (updateGUI time))
-        
-renderGUI :: [(String, GUIElem)] -> Picture
-renderGUI objects = Pictures $ map (renderObject.snd) objects
+        play display backColor simResolution (wp, objects) renderGUI
+        handleAllGUIEvents
+        (\time (wp, xs) -> (wp, ((updateWorld time) . (updateGUI time)) xs))
+     where
+      handleAllGUIEvents :: Event -> (WindowParams, [(String, GUIElem)]) -> (WindowParams, [(String, GUIElem)])
+      handleAllGUIEvents (EventResize (w, h)) (wp, xs) = (wp{scaleWidth = (fromIntegral w) / (fromIntegral $ windowWidth wp), scaleHeight = (fromIntegral h) / (fromIntegral $ windowHeight wp)}, xs)
+      handleAllGUIEvents (EventKey k  ks m (x, y)) (wp, xs) = basicHandleAllGUIEvents (EventKey k  ks m (x / scaleWidth wp, y / scaleHeight wp)) (wp, xs)
+      handleAllGUIEvents (EventMotion (x, y)) (wp, xs) = basicHandleAllGUIEvents (EventMotion (x / scaleWidth wp, y / scaleHeight wp)) (wp, xs)
+      basicHandleAllGUIEvents event (wp, xs) = (wp, ((handleEvents event) . (handleGUIEvents event)) xs)
+
+
+
+renderGUI :: (WindowParams, [(String, GUIElem)]) -> Picture
+renderGUI (wp, objects) = Scale (scaleWidth wp) (scaleHeight wp) $ Pictures $ map (renderObject.snd) objects
         
 handleGUIEvents :: Event -> [(String, GUIElem)] -> [(String, GUIElem)]
 handleGUIEvents event objects = map (\(n, a) -> (n, eventHandler event a)) objects
