@@ -97,16 +97,14 @@ basicTowerUpgrade2 = Tower {
             update = basicTowerShoot}
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicTowerShoot t time obj =     if  target t /= "" 
+basicTowerShoot t time obj =  if  target t /= "" 
                                     && lastShot t <= 0
-                                 then do
-                                      (basicBullet{name = bulletName, position = position t}):obj
-                                      replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (bulletsCount t + 1)}) obj
+                                 then 
+                                      sortBy (comparing objectsOrder) $ (basicBullet{name = bulletName, position = position t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (bulletsCount t + 1)}) obj)
                                  else
                                   if length newTargets /= 0 then
                                      replaceGameObject (name t) newTower obj
-                                  else do
-                                    obj
+                                  else 
                                     replaceGameObject (name t) (t{lastShot = lastShot t - time}) obj
                                       where
                                         newTargets = filter (findTarget (fst $ position t) (snd $ position t) (range t)) obj
@@ -124,7 +122,7 @@ basicBullet :: GameObject
 basicBullet = Bullet {
                name = ""
               ,position = (0,0)
-              ,render = getAsset "bullet1"
+              ,render = getAsset "tower1"
               ,speed = 10
               ,target = ""
               ,power = 1
@@ -310,12 +308,12 @@ updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h as
     individualUpdates = updateObjects delta objects
     (ne, nw) = updateWaves delta $ levelWaves level
     lpath = map (toGameCoords (x,y) w h) (levelPath level)
-    newName = show lastIndex
+    newName = "Enemy" ++ show lastIndex
     newIndex
       | isJust ne = lastIndex + 1
       | otherwise = lastIndex
     afterSpawn = case ne of
-                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e (show newIndex) lpath) : individualUpdates
+                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e newName lpath) : individualUpdates
                 Nothing -> individualUpdates
     (livesDelta, afterDeath) = getFinishedEnemies afterSpawn
     globalUpdates = afterDeath 

@@ -47,7 +47,7 @@ initMainWindow = do
           ,("Tower3", GUIElem (IconButton (((fromIntegral width) - (fromIntegral 1040)), -360) 150 150 towerIcon3 False))
           ,("Game", GUIElem (Game (0, 0 + (fromIntegral Config.controlPanelHeight)) (fromIntegral width) (fromIntegral height) picLib
               (GameState
-                   (Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(0, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])])
+                   (Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(1, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])])
                    []
                    0 
                    False
