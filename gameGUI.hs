@@ -67,7 +67,6 @@ initMainWindow = do
           ,("Game", GUIElem (Game (0, 0 + (fromIntegral Config.controlPanelHeight)) (fromIntegral width) (fromIntegral height) picLib
               (GameState
                    (Level bacgroundPic [(-200,-200), (-100, 0), (0, 100)] [(1, [basicEnemy, basicEnemy]), (5, [basicEnemy, basicEnemy])])
-                   []
                    10000 
                    False
                    ""
@@ -101,12 +100,18 @@ handleEvents (EventKey (MouseButton LeftButton) Down _ pos) xs = map update xs
 handleEvents _ xs = xs
 
 updateObjects :: Float -> [(String, GUIElem)] -> [(String, GUIElem)]
-updateObjects time objs = map update objs
+updateObjects time objs = map update newObjs
   where
+    newObjs = maybe objs (\g -> if  (gameResult g) /= Playing then (newGO g) else objs) $ (lookup "Game" objs) >>= unpackCast
+              where
+                newGO g = nobjs ++ [("EndText", GUIElem $ TextBox (0, 0) 500 100 (greyN 0.5) 20 ["Game over!" , "You " ++ (show $ gameResult g)])]
+                nobjs = map st objs
+                st ("Game", a) | Just g <- unpackCast a = ("Game", GUIElem $ pauseGame True g)
+                st a = a
     update ("Stats", _) = ("Stats", GUIElem $ (TextBox (-385,-360) 500 150 (greyN 0.5) 30 (["Stats:"] ++ info)))
             where
               curObj = snd $ fromJust $ find (\(n, ob)-> n == "Game") objs
               Just game@(Game (x, y) w h assets GameState{..}) = unpackCast curObj
-              info = ["Coins: " ++ (show money), "Life: " ++ (show lives)]
+              info = ["Waves left: " ++ show (wavesLeft game), "Coins: " ++ (show money), "Life: " ++ (show lives)]
     update other = other
 

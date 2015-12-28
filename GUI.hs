@@ -73,7 +73,15 @@ data SpecialIconButton a = SpecialIconButton Point   --centerPoint
                              Bool -- Highlighted
                              a
                              deriving (Show, Typeable)
-
+data SpecialTextButton a = SpecialTextButton Point   --centerPoint
+                             Integer --width
+                             Integer --height
+                             Float   --scale factor
+                             Color   --color
+                             String  --text
+                             Bool -- Highlighted
+                             a
+                             deriving (Show, Typeable)
 data TextBox = TextBox Point   --centerPoint
                        Integer --width
                        Integer --height
@@ -99,6 +107,14 @@ instance GUIObject TextButton where
     | otherwise = tb
   eventHandler _ o = o
 
+instance GUIObject (SpecialTextButton a) where
+  renderObject = renderSTButton
+  eventHandler (EventMotion ep) tb@(SpecialTextButton p w h sc c t hl a)
+    | (not hl) && contains p (w,h) ep = SpecialTextButton p w h sc c t True a
+    | hl && (not $ contains p (w,h) ep) = SpecialTextButton p w h sc c t False a
+    | otherwise = tb
+  eventHandler _ o = o
+  
 instance GUIObject IconButton where
   renderObject = renderIButton
   eventHandler (EventMotion ep) tb@(IconButton p w h t hl)
@@ -143,6 +159,10 @@ renderTButton (TextButton (x, y) w h sc c txtStr hl) =
                                                 (halfW + fr, halfH + fr), 
                                                 (-halfW - fr, halfH + fr)]]
                                         else [])
+                                        
+renderSTButton :: SpecialTextButton a -> Picture
+renderSTButton (SpecialTextButton (x, y) w h sc c txtStr hl _) = renderTButton (TextButton (x, y) w h sc c txtStr hl)
+    
     
 renderIButton :: IconButton -> Picture
 renderIButton (IconButton (x, y) w h icon hl) = do
