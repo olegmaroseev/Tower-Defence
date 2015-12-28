@@ -2,3 +2,4 @@ pic/background.bmp
 (-200,-200) (-100,0) (0,100)
 1 basicEnemy basicEnemy
 5 basicEnemy basicUpdatedEnemy
+2 middleEnemy
