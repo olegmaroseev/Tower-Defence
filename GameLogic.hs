@@ -258,7 +258,7 @@ basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
 
 targetShooted :: GameObject -> [GameObject] -> Maybe GameObject
 targetShooted b@Bullet{..} objs
-       | isJust mTarget && dist <= speed = mTarget
+       | isJust mTarget && dist <= Config.enemyRadius = mTarget
        | otherwise = Nothing
            where
             (bx, by) = position
@@ -498,7 +498,7 @@ distance (x1, y1) (x2, y2) = let dx = x2 - x1
                                  dy = y2 - y1 in sqrt (dx * dx + dy * dy)
 
 gameObjectHittest :: GameObject -> Point -> Bool
-gameObjectHittest t p = 20 > distance p (position t)
+gameObjectHittest t p = Config.towerRadius > distance p (position t)
 
 isTower :: GameObject -> Bool
 isTower Tower{..} = True
