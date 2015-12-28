@@ -3,4 +3,6 @@ pic/background4.bmp
 1 basicEnemy basicEnemy
 5 basicEnemy
 9 basicEnemy basicEnemy basicEnemy basicEnemy
-11 basicEnemy basicEnemy basicEnemy basicEnemy basicEnemy basicEnemy basicEnemy basicEnemy
+11 basicEnemy basicEnemy basicEnemy basicUpdatedEnemy basicEnemy basicEnemy basicEnemy basicEnemy
+15 basicUpdatedEnemy middleEnemy middleEnemy basicUpdatedEnemy middleEnemy
+20 basicUpdatedEnemy middleEnemy middleEnemy middleEnemy middleEnemy
