@@ -55,7 +55,7 @@ basicTower = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower3",
+            render = getAsset "Tower3-1",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
@@ -73,7 +73,7 @@ basicTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower1",
+            render = getAsset "Tower3-2",
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
@@ -90,7 +90,7 @@ basicTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower1", 
+            render = getAsset "Tower3-3", 
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
@@ -107,7 +107,7 @@ magicTower = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower2",
+            render = getAsset "Tower2-1",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
@@ -125,7 +125,7 @@ magicTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower2",
+            render = getAsset "Tower2-2",
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
@@ -142,7 +142,7 @@ magicTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower2", 
+            render = getAsset "Tower2-3", 
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
@@ -159,7 +159,7 @@ archerTower = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower1",
+            render = getAsset "Tower1-1",
             sellCost = 5, 
             upgradeCost = 10, 
             nextUpgrade = Just basicTowerUpgrade1, 
@@ -177,7 +177,7 @@ archerTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower3",
+            render = getAsset "Tower1-2",
             sellCost = 10, 
             upgradeCost = 20, 
             nextUpgrade = Just basicTowerUpgrade2, 
@@ -194,7 +194,7 @@ archerTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
             price = 5,
-            render = getAsset "tower3", 
+            render = getAsset "Tower1-3", 
             sellCost = 20, 
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
@@ -526,9 +526,18 @@ deleteCurrentTower (Game (x,y) w h assets gs@GameState{..})
   |selectedTower /= "" = Game (x,y) w h assets gs { objects = (filter (\x -> (getName x) /= (selectedTower)) (objects) ) , 
                                                                                           money = money + sellCost ( head (filter (\x -> (getName x) == (selectedTower)) (objects))) }
   | otherwise = (Game (x,y) w h assets gs)
+
 upgradeCurrentTower::Game -> Game
 upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})
-          | selectedTower /= "" && upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
+          | selectedTower /= "" && upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) 
+              = deleteCurrentTower $ Game (x,y) w h assets gs 
+                 {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)
+                 ,  objects = objects ++ [(
+                                            ( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) )
+                                               { position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , 
+                                                 name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } 
+                                          )]  
+                  }
           | otherwise = (Game (x,y) w h assets gs)
 
 wavesLeft :: Game -> Int
