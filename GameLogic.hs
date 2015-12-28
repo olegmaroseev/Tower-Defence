@@ -40,6 +40,7 @@ data GameObject =
             hitpoints::Float,
             maxHitpoints::Float,
             power::Float,
+            reward::Int,
             update::GameObject->Float->[GameObject]->[GameObject]} |
   Bullet {  name::String,
             position::Point,
@@ -197,6 +198,7 @@ basicEnemy = Enemy {
             hitpoints=10,
             maxHitpoints=10,
             power=1,
+            reward = 10,
             update=basicEnemyUpdate
             }
 
@@ -304,7 +306,7 @@ updateObjects :: Float -> [GameObject] -> [GameObject]
 updateObjects time xs = foldl (\acc x -> update x x time acc) xs xs
     
 updateGame :: Float -> Game -> Game
-updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, level = level {levelWaves = nw}, lives = lives - livesDelta, lastIndex = newIndex})
+updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, level = level {levelWaves = nw}, lives = lives - livesDelta, lastIndex = newIndex, money = money + moneyDelta})
   where
     individualUpdates = updateObjects delta objects
     (ne, nw) = updateWaves delta $ levelWaves level
@@ -316,19 +318,20 @@ updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h as
     afterSpawn = case ne of
                 Just e -> sortBy (comparing objectsOrder) $ (initEnemy e newName lpath) : individualUpdates
                 Nothing -> individualUpdates
-    (livesDelta, afterDeath) = getFinishedEnemies afterSpawn
+    (livesDelta, moneyDelta, afterDeath) = getFinishedEnemies afterSpawn
     globalUpdates = afterDeath 
     
 enemyReachedEnd :: Enemy -> Bool
 enemyReachedEnd Enemy{..} = null path
     
-getFinishedEnemies :: [GameObject] -> (Float, [GameObject])
-getFinishedEnemies xs = foldr step (0, []) xs
+getFinishedEnemies :: [GameObject] -> (Float, Int, [GameObject])
+getFinishedEnemies xs = foldr step (0, 0, []) xs
   where
-    step x@Enemy{..} (d, es)
-      | enemyReachedEnd x = (d + power, es)
-      | otherwise = (d, x:es)
-    step x (d, es) = (d, x:es)
+    step x@Enemy{..} (d, m, es)
+      | hitpoints <= 0 = (d, m + reward, es)
+      | enemyReachedEnd x = (d + power, m, es)
+      | otherwise = (d, m, x:es)
+    step x (d, m, es) = (d, m, x:es)
     
 initEnemy :: Enemy -> String -> [Point] -> Enemy
 initEnemy e@Enemy{..} n p = e {path = p, position = head p, name = n}
