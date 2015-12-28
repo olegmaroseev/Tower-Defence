@@ -358,7 +358,6 @@ type Wave = (Float, [Enemy])
 data Level = Level {levelPicture::Picture, levelPath::[Point], levelWaves::[Wave]}
 
 data GameState = GameState { level :: Level,
-                   nextWaves :: [Wave],
                    money :: Int,
                    isPaused :: Bool,
                    selectedTower :: String,
@@ -410,7 +409,9 @@ updateObjects :: Float -> [GameObject] -> [GameObject]
 updateObjects time xs = foldl (\acc x -> update x x time acc) xs xs
     
 updateGame :: Float -> Game -> Game
-updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h assets gs { objects = globalUpdates, level = level {levelWaves = nw}, lives = lives - livesDelta, lastIndex = newIndex, money = money + moneyDelta})
+updateGame delta (Game (x, y) w h assets gs@GameState{..})
+  | isPaused = (Game (x, y) w h assets gs)
+  | otherwise = (Game (x, y) w h assets gs { objects = globalUpdates, level = level {levelWaves = nw}, lives = lives - livesDelta, lastIndex = newIndex, money = money + moneyDelta})
   where
     individualUpdates = updateObjects delta objects
     (ne, nw) = updateWaves delta $ levelWaves level
@@ -461,6 +462,8 @@ pathCollision (x:y:xs) p = (pointInBox p x y) || pathCollision (y:xs) p
 
 towerCollision ((x,y):[]) p = (pointInBox p (x-70,y-70) (x+70, y+70))
 towerCollision ((x,y):z) p = (pointInBox p (x-70,y-70) (x+70, y+70)) || towerCollision z p
+towerCollision _ _ = False
+
 
 distance :: Point -> Point -> Float
 distance (x1, y1) (x2, y2) = let dx = x2 - x1 
@@ -528,6 +531,18 @@ upgradeCurrentTower (Game (x,y) w h assets gs@GameState{..})
           | selectedTower /= "" && upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0) <= (money) = deleteCurrentTower $ Game (x,y) w h assets gs {  money = money - upgradeCost ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0),  objects = objects ++ [(( fromJust  (nextUpgrade ( (filter (\x -> (name x) == (selectedTower)) (objects))!!0)) ){ position = (position ((filter (\x -> (name x) == (selectedTower)) (objects))!!0 )) , name = (name ((filter (\x -> (name x) == (selectedTower)) (objects)) !!0 )) } )]  }
           | otherwise = (Game (x,y) w h assets gs)
 
+wavesLeft :: Game -> Int
+wavesLeft (Game (x,y) w h assets gs@GameState{..}) = length $ levelWaves level
 
---TODO: pausing game
+pauseGame :: Bool -> Game -> Game
+pauseGame pause (Game (x,y) w h assets gs@GameState{..}) = (Game (x,y) w h assets gs {isPaused = pause} )
 
+
+data GameResult = Win | Lose | Playing
+  deriving (Show, Eq)
+
+gameResult :: Game -> GameResult
+gameResult (Game (x,y) w h assets gs@GameState{..})
+  | lives <= 0 = Lose
+  | null (levelWaves level) && null (filter isEnemy objects) = Win
+  | otherwise = Playing
