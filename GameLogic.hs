@@ -89,7 +89,7 @@ basicTowerUpgrade2 = Tower {
             upgradeCost = 0, 
             nextUpgrade = Nothing, 
             range = 200,
-            cooldown = 2,
+            cooldown = 50,
             lastShot = 0,
             power = 10,
             target = "",
@@ -97,10 +97,9 @@ basicTowerUpgrade2 = Tower {
             update = basicTowerShoot}
             
 basicTowerShoot :: GameObject -> Float -> [GameObject] -> [GameObject]
-basicTowerShoot t time obj =  if  target t /= "" 
+basicTowerShoot t time obj =     if  target t /= "" 
                                     && lastShot t <= 0
-                                 then 
-                                      sortBy (comparing objectsOrder) $ (basicBullet{name = bulletName, position = position t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (bulletsCount t + 1)}) obj)
+                                 then (basicBullet{name = bulletName, position = position t}):(replaceGameObject (name t) (t{lastShot = cooldown t, bulletsCount = (bulletsCount t + 1)}) obj)
                                  else
                                   if length newTargets /= 0 then
                                      replaceGameObject (name t) newTower obj
@@ -122,7 +121,7 @@ basicBullet :: GameObject
 basicBullet = Bullet {
                name = ""
               ,position = (0,0)
-              ,render = getAsset "tower1"
+              ,render = getAsset "bullet1"
               ,speed = 10
               ,target = ""
               ,power = 1
@@ -133,9 +132,8 @@ basicBulletUpdate :: GameObject -> Float -> [GameObject] -> [GameObject]
 basicBulletUpdate b time objs = if isJust mB && isNothing shooted then
                                     replaceGameObject (name b) (fromJust mB) objs
                                 else
-                                    if isJust shooted then do
-                                        replaceGameObject (name shEn) (shEn{hitpoints = hitpoints shEn - power b}) objs
-                                        delBullet
+                                    if isJust shooted then
+                                        replaceGameObject (name shEn) (shEn{hitpoints = hitpoints shEn - power b}) delBullet
                                     else
                                         delBullet
                                     
@@ -308,12 +306,12 @@ updateGame delta (Game (x, y) w h assets gs@GameState{..}) = (Game (x, y) w h as
     individualUpdates = updateObjects delta objects
     (ne, nw) = updateWaves delta $ levelWaves level
     lpath = map (toGameCoords (x,y) w h) (levelPath level)
-    newName = "Enemy" ++ show lastIndex
+    newName = show lastIndex
     newIndex
       | isJust ne = lastIndex + 1
       | otherwise = lastIndex
     afterSpawn = case ne of
-                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e newName lpath) : individualUpdates
+                Just e -> sortBy (comparing objectsOrder) $ (initEnemy e (show newIndex) lpath) : individualUpdates
                 Nothing -> individualUpdates
     (livesDelta, afterDeath) = getFinishedEnemies afterSpawn
     globalUpdates = afterDeath 
