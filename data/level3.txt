@@ -1,4 +1,4 @@
 pic/background3.bmp
-(-200,-200) (-100,0) (0,100)
+(-580,350) (-320,350) (-320,50) (-100,50) (-100,350) (50,350)
 1 basicEnemy basicEnemy
 5 basicEnemy
