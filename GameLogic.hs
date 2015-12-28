@@ -12,6 +12,7 @@ import Data.Typeable
 import Data.Maybe
 import qualified Data.Map as Map
 import Config
+import Graphics.Gloss.Data.Point
 
 type Tower = GameObject
 type Enemy = GameObject
@@ -19,6 +20,7 @@ type Enemy = GameObject
 data GameObject =
   Tower {   name::String,
             position::Point, 
+			price::Int,
             render::GameObject -> AssetLibrary->Picture,
             sellCost::Int, 
             upgradeCost::Int, 
@@ -51,6 +53,7 @@ basicTower :: GameObject
 basicTower = Tower {
             name = "",
             position = (0,0), 
+			price = 5,
             render = getAsset "tower1",
             sellCost = 5, 
             upgradeCost = 10, 
@@ -68,6 +71,7 @@ basicTowerUpgrade1 :: GameObject
 basicTowerUpgrade1 = Tower {
             name = "",
             position = (0,0), 
+			price = 5,
             render = getAsset "tower1",
             sellCost = 10, 
             upgradeCost = 20, 
@@ -84,6 +88,7 @@ basicTowerUpgrade2 :: GameObject
 basicTowerUpgrade2 = Tower {
             name = "",
             position = (0,0), 
+			price = 5,
             render = getAsset "tower1", 
             sellCost = 20, 
             upgradeCost = 0, 
@@ -342,7 +347,10 @@ updateWave dt (spawn, e : es)
     
 --TODO: Check if tower is on the path or collides with other towers
 isPlacementCorrect :: Point -> GameState -> Bool
-isPlacementCorrect pos GameState{..} = True --undefined
+isPlacementCorrect pos gs@GameState{..} = (not $ pathCollision (levelPath level) pos)
+
+pathCollision (x:y:[]) p = (pointInBox p x y)
+pathCollision (x:y:xs) p = (pointInBox p x y) || pathCollision (y:xs) p
 
 distance :: Point -> Point -> Float
 distance (x1, y1) (x2, y2) = let dx = x2 - x1 
@@ -387,7 +395,7 @@ handleGameEvents (EventKey (MouseButton RightButton) Down _ rpos) (Game (x, y) w
 handleGameEvents _ g = g
 
 setPlacingTower :: Game -> Point -> GameObject -> Game
-setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} = Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos}, selectedTower = "" } 
+setPlacingTower (Game (x,y) w h assets gs) pos t@Tower{..} | price <= (money gs) = ( Game (x,y) w h assets gs {placingTower = Just t {position = toGameCoords (x,y) w h pos}, selectedTower = "", money = (money gs) - price} } )
 setPlacingTower g _ _ = g
 
 deleteCurrentTower :: Game -> Game
