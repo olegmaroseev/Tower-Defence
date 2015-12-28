@@ -6,3 +6,4 @@ getEnemy::String -> Enemy
 getEnemy "basicEnemy" = basicEnemy
 getEnemy "basicUpdatedEnemy" = basicUpdatedEnemy
 getEnemy "middleEnemy" = middleEnemy
+getEnemy "strongEnemy" = strongEnemy

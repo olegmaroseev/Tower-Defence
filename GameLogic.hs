@@ -355,6 +355,20 @@ middleEnemy = Enemy {
             reward = 20,
             update=basicEnemyUpdate
             }
+			
+strongEnemy :: GameObject
+strongEnemy = Enemy {
+            name="",
+            position=(0,0), 
+            render = renderBasicEnemy "enemy4",--"enemy2",
+            path=[],
+            speed=120,
+            hitpoints=50,
+            maxHitpoints=50,
+            power=6,
+            reward = 40,
+            update=basicEnemyUpdate
+            }
 
 renderBasicEnemy :: String -> GameObject -> AssetLibrary -> Picture
 renderBasicEnemy an e@Enemy{..} assets = Translate (fst position) (snd position) pic

@@ -1,4 +1,13 @@
 pic/background.bmp
-(-200,-200) (-100,0) (0,100)
+(-550,400) (-450,300) (-490,-100) (-200,-100) (-150,-50) (-200,350) (100,350) (100,-100) (390,-100) (330,350) (600,350)
 1 basicEnemy basicEnemy
-5 basicEnemy
+5 basicEnemy basicUpdatedEnemy
+7 middleEnemy
+9 middleEnemy middleEnemy
+10 middleEnemy middleEnemy middleEnemy middleEnemy middleEnemy
+12 middleEnemy middleEnemy middleEnemy middleEnemy middleEnemy
+15 strongEnemy strongEnemy middleEnemy strongEnemy
+20 strongEnemy
+22 strongEnemy middleEnemy strongEnemy
+24 strongEnemy strongEnemy strongEnemy strongEnemy strongEnemy
+30 middleEnemy middleEnemy basicEnemy strongEnemy strongEnemy
