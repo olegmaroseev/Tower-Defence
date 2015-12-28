@@ -3,6 +3,10 @@ module Config where
 picBase = [("Tower1", "pic/tower1.bmp")
           ,("Tower2", "pic/tower2.bmp")
           ,("Tower3", "pic/tower3.bmp")
+          ,("Enemy1", "pic/enemy1.bmp")
+          ,("Enemy2", "pic/enemy2.bmp")
+          ,("Enemy3", "pic/enemy3.bmp")
+          ,("Enemy4", "pic/enemy4.bmp")
           ,("Background1", "pic/background.bmp")
           ,("Bullet1", "pic/bullet1.bmp")
           ]

@@ -192,7 +192,7 @@ basicEnemy :: GameObject
 basicEnemy = Enemy {
             name="",
             position=(0,0), 
-            render = renderBasicEnemy "tower1",--"enemy1",
+            render = renderBasicEnemy "enemy1",--"enemy1",
             path=[],
             speed=50,
             hitpoints=10,
