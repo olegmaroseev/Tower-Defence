@@ -35,6 +35,7 @@ data GameObject =
             path::[Point],
             speed::Float,
             hitpoints::Float,
+            maxHitpoints::Float,
             power::Float,
             update::GameObject->Float->[GameObject]->[GameObject]} |
   Bullet {  name::String,
@@ -60,9 +61,7 @@ basicTower = Tower {
             target = "",
             update = basicTowerShoot}
 
-getAsset :: String -> GameObject -> AssetLibrary -> Picture
-getAsset name go assets = Translate (fst $ position go) (snd $ position go) $ maybe Blank id $ Map.lookup name assets
-            
+
 basicTowerUpgrade1 :: GameObject
 basicTowerUpgrade1 = Tower {
             name = "",
@@ -157,23 +156,49 @@ getName = name
 getPos :: GameObject -> Point
 getPos = position
 
+getAsset :: String -> GameObject -> AssetLibrary -> Picture
+getAsset name go assets = Translate (fst $ position go) (snd $ position go) $ maybe Blank id $ Map.lookup name assets
+            
+
 basicEnemy :: GameObject
 basicEnemy = Enemy {
             name="",
             position=(0,0), 
-            render = getAsset "tower1",--"enemy1",
+            render = renderBasicEnemy "tower1",--"enemy1",
             path=[],
             speed=50,
             hitpoints=10,
+            maxHitpoints=10,
             power=1,
             update=basicEnemyUpdate
             }
 
+renderBasicEnemy :: String -> GameObject -> AssetLibrary -> Picture
+renderBasicEnemy an e@Enemy{..} assets = Translate (fst position) (snd position) pic
+  where
+    dir = -(enemyDir e) * 180 / pi
+    pic = Pictures $ [asset, healthBar]
+    asset = maybe Blank (Rotate dir) $ Map.lookup an assets
+    all = Color (makeColor 0 0 0 1) $ Polygon [((-Config.hpHalfWidth), (-Config.hpHalfHeight)),(Config.hpHalfWidth, (-Config.hpHalfHeight)),(Config.hpHalfWidth, Config.hpHalfHeight),((-Config.hpHalfWidth), Config.hpHalfHeight)]
+    ratio = hitpoints / maxHitpoints
+    health = Color (makeColor 1 1 1 1) $ Polygon [((-Config.hpHalfWidth) * ratio + Config.hpMargin, (-Config.hpHalfHeight) + Config.hpMargin),(Config.hpHalfWidth * ratio - Config.hpMargin, (-Config.hpHalfHeight) + Config.hpMargin),(Config.hpHalfWidth * ratio - Config.hpMargin, Config.hpHalfHeight - Config.hpMargin),((-Config.hpHalfWidth) * ratio + Config.hpMargin, Config.hpHalfHeight - Config.hpMargin)]
+    healthBar = Translate 0 Config.hpTranslate $ Pictures $ [ all, health ]
+            
 replace :: (a -> Bool) -> a -> [a] -> [a]
 replace pred new xs = map (\x -> if pred x then new else x) xs
 
 replaceGameObject :: String -> GameObject -> [GameObject] -> [GameObject]
 replaceGameObject n obj xs = replace ((n==).name) obj xs
+
+enemyDir :: GameObject -> Float
+enemyDir Enemy{..} = dir
+  where
+    (cx, cy) = position
+    (nx, ny) = head path
+    dx = nx - cx
+    dy = ny - cy
+    dir = atan2 dy dx
+enemyDir _ = 0
 
 moveEnemy :: Float -> GameObject -> GameObject
 moveEnemy delta e@Enemy{..}
